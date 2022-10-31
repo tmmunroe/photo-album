@@ -56,3 +56,7 @@ command.
  * `cdk docs`        open CDK documentation
 
 Enjoy!
+
+## Lambda Layers
+
+ * use lambda layers to deploy libraries that your lambda handler depends on 
