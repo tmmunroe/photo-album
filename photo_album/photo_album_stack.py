@@ -1,11 +1,9 @@
-from aws_cdk import (
-    # Duration,
-    Stack,
-    # aws_sqs as sqs,
-)
+import aws_cdk as cdk
+import aws_cdk.aws_s3 as s3
+
 from constructs import Construct
 
-class PhotoAlbumStack(Stack):
+class PhotoAlbumStack(cdk.Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -17,3 +15,8 @@ class PhotoAlbumStack(Stack):
         #     self, "PhotoAlbumQueue",
         #     visibility_timeout=Duration.seconds(300),
         # )
+
+        bucket = s3.Bucket(self, "PhotoAlbumBucket",
+            versioned=True,
+            removal_policy=cdk.RemovalPolicy.DESTROY,
+            auto_delete_objects=True)
