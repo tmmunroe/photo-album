@@ -1,0 +1,1 @@
+pip install --upgrade -t layer/python -r requirements-lambda.txt
