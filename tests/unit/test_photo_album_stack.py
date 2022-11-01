@@ -1,7 +1,7 @@
 import aws_cdk as core
 import aws_cdk.assertions as assertions
 
-from photo_album.photo_album_stack import PhotoAlbumStack
+from stacks.backend_stack import PhotoAlbumStack
 
 # example tests. To run these tests, uncomment this file along with the example
 # resource in photo_album/photo_album_stack.py

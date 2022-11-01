@@ -60,3 +60,21 @@ Enjoy!
 ## Lambda Layers
 
  * use lambda layers to deploy libraries that your lambda handler depends on 
+
+ * Generate Lambda Layer
+
+        ./gen-lambda-layer.sh
+
+ * Deploy application
+
+        cdk synth # test generation of CloudFormation
+
+        cdk diff # check diffs
+
+        cdk deploy # to deploy
+
+ * Test endpoints
+
+        curl -X GET https://GUID.execute-api.REGION.amazonaws.com/prod/
+
+sam local invoke PhotoAlbumIndexer --no-event -t ./cdk.out/PhotoAlbumStack.template.json

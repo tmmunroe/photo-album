@@ -3,26 +3,26 @@ import os
 
 import aws_cdk as cdk
 
-from photo_album.photo_album_stack import PhotoAlbumStack
+from stacks.backend_stack import PhotoAlbumStack
+from services.data_service.data_service import PhotoAlbumDataStack
+from frontend.frontend_stack import PhotoAlbumFrontendStack
 
+
+env = cdk.Environment(account='756059218166', region='us-east-1')
 
 app = cdk.App()
-PhotoAlbumStack(app, "PhotoAlbumStack",
-    # If you don't specify 'env', this stack will be environment-agnostic.
-    # Account/Region-dependent features and context lookups will not work,
-    # but a single synthesized template can be deployed anywhere.
+data_stack = PhotoAlbumDataStack(app, 
+    "PhotoAlbumDataStack",
+    env=env)
 
-    # Uncomment the next line to specialize this stack for the AWS Account
-    # and Region that are implied by the current CLI configuration.
+app_stack = PhotoAlbumStack(app, 
+    "PhotoAlbumStack",
+    env=env,
+    bucket=data_stack.bucket,
+    open_search=data_stack.open_search)
 
-    # env=cdk.Environment(account=os.getenv('CDK_DEFAULT_ACCOUNT'), region=os.getenv('CDK_DEFAULT_REGION')),
-
-    # Uncomment the next line if you know exactly what Account and Region you
-    # want to deploy the stack to. */
-
-    env=cdk.Environment(account='756059218166', region='us-east-1'),
-
-    # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
-    )
+PhotoAlbumFrontendStack(app,
+    "PhotoAlbumFrontend",
+    env=env)
 
 app.synth()
