@@ -4,6 +4,7 @@ from aws_cdk import (aws_apigateway as apigateway,
                      aws_s3 as s3,
                      aws_opensearchservice as opensearch,
                      aws_lambda as lambda_,
+                     aws_rekognition as rekognition,
                      RemovalPolicy)
 
 
@@ -29,3 +30,10 @@ class PhotoIndexService(Construct):
         # set up indexer permissions
         self.lambda_index.grant_invoke(photo_bucket)
         open_search.grant_index_read_write(self.lambda_index)
+
+        # rekognition is non-storage API
+        statement = iam.PolicyStatement()
+        statement.add_actions("rekognition:DetectLabels")
+        statement.add_resources("*")
+        self.lambda_index.add_to_role_policy(statement)
+
