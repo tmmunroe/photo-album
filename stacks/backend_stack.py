@@ -24,27 +24,27 @@ class PhotoAlbumStack(cdk.Stack):
         index_service = PhotoIndexService(self, "PhotoIndexService", 
             bucket=bucket, open_search=open_search, lambda_layer=lambda_layer)
         
-        search_service = PhotoSearchService(self, "PhotoSearchService", 
-            bucket=bucket, open_search=open_search, lambda_layer=lambda_layer)
+        # search_service = PhotoSearchService(self, "PhotoSearchService", 
+        #     bucket=bucket, open_search=open_search, lambda_layer=lambda_layer)
 
-        # api = apigateway.RestApi(self, "photo-api",
-        #         rest_api_name="Photo Album Service",
-        #         description="This service serves photos to clients")
+        # # api = apigateway.RestApi(self, "photo-api",
+        # #         rest_api_name="Photo Album Service",
+        # #         description="This service serves photos to clients")
                 
-        api_definition = apigateway.ApiDefinition.from_asset('api/photo_api.yml')
-        api = apigateway.SpecRestApi(self, "photo-api", api_definition=api_definition)
+        # api_definition = apigateway.ApiDefinition.from_asset('api/photo_api.yml')
+        # api = apigateway.SpecRestApi(self, "photo-api", api_definition=api_definition)
 
-        search_service_integration = apigateway.LambdaIntegration(search_service.lambda_search,
-                request_templates={"application/json": '{ "statusCode": "200" }'})
+        # search_service_integration = apigateway.LambdaIntegration(search_service.lambda_search,
+        #         request_templates={"application/json": '{ "statusCode": "200" }'})
         
-        post_photo_integration = apigateway.AwsIntegration(
-            service="s3",
-            path="{bucket}/{key}",
-            integration_http_method="POST",
-        )
+        # post_photo_integration = apigateway.AwsIntegration(
+        #     service="s3",
+        #     path="{bucket}/{key}",
+        #     integration_http_method="POST",
+        # )
 
-        upload = api.root.add_method("POST", post_photo_integration)
-        search = api.root.add_method("GET", search_service_integration)
+        # upload = api.root.add_method("POST", post_photo_integration)
+        # search = api.root.add_method("GET", search_service_integration)
 
         # bucket.grant_put(api.root)
         # search_service.lambda_search.grant_invoke(api)
