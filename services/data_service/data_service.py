@@ -2,9 +2,7 @@ import aws_cdk as cdk
 from constructs import Construct
 from aws_cdk import (aws_s3 as s3,
                      aws_ec2 as ec2,
-                     aws_opensearchservice as opensearch,
-                     EngineVersion,
-                     RemovalPolicy)
+                     aws_opensearchservice as opensearch)
 
 
 class PhotoAlbumDataService(Construct):
@@ -21,7 +19,7 @@ class PhotoAlbumDataService(Construct):
             version=opensearch.EngineVersion.OPENSEARCH_1_3,
             ebs=opensearch.EbsOptions(
                 volume_size=10,
-                volume_type=ec2.EbsDeviceVolumeType.GENERAL_PURPOSE_SSD
+                volume_type=ec2.EbsDeviceVolumeType.GP2
             ),
             node_to_node_encryption=True,
             # security_groups=None,

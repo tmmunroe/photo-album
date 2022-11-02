@@ -2,7 +2,6 @@ import aws_cdk as cdk
 import aws_cdk.aws_s3 as s3
 
 from constructs import Construct
-from . import frontend
 
 class PhotoAlbumFrontendStack(cdk.Stack):
 

@@ -1,13 +1,10 @@
-swagger: '2.0'
+openapi: 3.0.3
 info:
   title: AI Photo Search
-  description: 'AI Photo Search application, built during the Cloud and Big Data course at Columbia University.'
+  description: AI Photo Search application, built during the Cloud and Big Data course at Columbia University.
   version: 1.0.0
-schemes:
-  - https
-basePath: /v1
-produces:
-  - application/json
+servers:
+  - url: https://api.example.com/v1
 paths:
   /search:
     get:
@@ -18,71 +15,101 @@ paths:
       parameters:
         - in: query
           name: q
+          required: true
+          description: the string to be searched
           schema:
             type: string
-          description: the string to be searched
-      produces:
-        - application/json
       responses:
         '200':
           description: search results
-          schema:
-            $ref: '#/definitions/SearchResponse'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfPhotoInfo'
         '403':
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /upload:
-    put:
+    post:
       summary: photo upload method
       description: |
         This API takes in the multi-part body sent to it (ex. a photo) and uploads it to an S3 bucket.
       operationId: uploadPhoto
-      consumes:
-        - image/png
-        - image/jpg
-        - image/jpeg
-      produces:
-        - application/json
+      requestBody: 
+        $ref: '#/components/requestBodies/PhotoUpload'
       responses:
         '200':
-          description: S3 PUT operation response
-          schema:
-            type: object
+          description: S3 POST operation response
         '403':
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/Error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-amazon-apigateway-integration:
+        credentials: "arn:aws:iam::756059218166:role/api-gateway-access-to-s3"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-east-1:s3:path/{bucket}/{key}"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        type: "aws"
+components:
+  requestBodies:
+    PhotoUpload:
+      description: photo upload request body
+      required: true
+      content:
+        multipart/form-data:
           schema:
-            $ref: '#/definitions/Error'
-definitions:
-  SearchResponse:
-    type: object
-    properties:
-      results:
-        type: array
-        items:
-          $ref: '#/definitions/Photo'
-  Photo:
-    type: object
-    properties:
-      url:
-        type: string
-      labels:
-        type: array
-        items:
+            type: object
+            properties:
+              photoInfo:
+                $ref: "#/components/schemas/PhotoInfo"
+              photo:
+                type: string
+                format: binary
+          encoding:
+            photo:
+              contentType: image/png, image/jpeg, image/jpg
+  schemas:
+    ArrayOfPhotoInfo:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhotoInfo'
+    PhotoInfo:
+      type: object
+      properties:
+        url:
           type: string
-  Error:
-    type: object
-    properties:
-      code:
-        type: integer
-        format: int32
-      message:
-        type: string
+        labels:
+          type: array
+          items:
+            type: string
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string

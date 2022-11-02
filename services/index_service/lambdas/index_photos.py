@@ -1,48 +1,21 @@
-import boto3
 import json
-import os
-import requests
-from botocore.exceptions import ClientError
+import urllib.parse
+import boto3
 
-# s3_client = boto3.resource('s3')
-bucket_name = os.getenv('BUCKET')
-
-
-def get_handler(event, context):
-    return {
-        "statusCode": 200,
-        "body": "Hello world from GET HANDLER!"
-    }
-
-
-def put_handler(event, context):
-    return {
-        "statusCode": 200,
-        "body": "Hello world from PUT HANDLER!"
-    }
-
-
-def post_handler(event, context):
-    return {
-        "statusCode": 200,
-        "body": "Hello world from POST HANDLER!"
-    }
+s3 = boto3.client('s3')
 
 
 def lambda_handler(event, context):
-    method = event.get('httpMethod')
-    print(f'Event: {event}')
-    print(f'Context: {context}')
-    print(f'Handling bucket {bucket_name}')
+    print("Event: " + json.dumps(event))
 
-    if method == 'GET':
-        return get_handler(event, context)
-    elif method == 'PUT':
-        return put_handler(event, context)
-    elif method == 'POST':
-        return post_handler(event, context)
-    else:
-        return {
-            "statusCode": 503,
-            "body": f"Server failure: failed to find method {method}"
-        }
+    # Get the object from the event and show its content type
+    bucket = event['Records'][0]['s3']['bucket']['name']
+    key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
+    try:
+        response = s3.get_object(Bucket=bucket, Key=key)
+        print("CONTENT TYPE: " + response['ContentType'])
+        return response['ContentType']
+    except Exception as e:
+        print(e)
+        print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
+        raise e
