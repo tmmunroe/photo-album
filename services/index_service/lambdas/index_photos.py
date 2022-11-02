@@ -1,8 +1,33 @@
+import datetime
 import json
 import urllib.parse
 import boto3
 
 s3 = boto3.client('s3')
+rekognition = boto3.client('rekognition')
+
+min_confidence = 0.6
+max_labels = 10
+
+
+def get_labels(bucket, key):
+    try:
+        response = rekognition.detect_labels(
+            Image={
+                'S3Object': {
+                    'Bucket': bucket,
+                    'Name': key
+                    }
+                },
+            MaxLabels=max_labels,
+            MinConfidence=min_confidence
+        )
+    except Exception as e:
+        print(e)
+        print(f"Error getting {key} from bucket {bucket}")
+        raise e
+    
+    return [ label['Name'] for label in response['Labels'].items() ]
 
 
 def lambda_handler(event, context):
@@ -13,11 +38,16 @@ def lambda_handler(event, context):
     key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
     print(f"Bucket: {bucket}")
     print(f"Key: {key}")
-    try:
-        response = s3.get_object(Bucket=bucket, Key=key)
-        print("CONTENT TYPE: " + response['ContentType'])
-        return response['ContentType']
-    except Exception as e:
-        print(e)
-        print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
-        raise e
+
+    labels = get_labels(bucket, key)
+    print(labels)
+
+    labeled_bucket_info = {
+        "bucket": bucket,
+        "objectKey": key,
+        "createdTimestamp": datetime.datetime.now().timestamp(),
+        "labels": labels
+    }
+    print(labeled_bucket_info)
+
+    
