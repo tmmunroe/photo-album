@@ -9,13 +9,13 @@ class PhotoAlbumDataService(Construct):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        self.bucket = s3.Bucket(self, "PhotoAlbumDataTier",
+        self.bucket = s3.Bucket(self, "PhotoAlbumS3",
             versioned=True,
             removal_policy=cdk.RemovalPolicy.DESTROY,
             auto_delete_objects=True,
         )
 
-        self.open_search = opensearch.Domain(self, "Domain",
+        self.open_search = opensearch.Domain(self, "PhotoAlbumOpenSearch",
             version=opensearch.EngineVersion.OPENSEARCH_1_3,
             capacity=opensearch.CapacityConfig(
                 data_node_instance_type='t3.small.search',

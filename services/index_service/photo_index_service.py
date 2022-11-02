@@ -31,6 +31,7 @@ class PhotoIndexService(Construct):
         
         # set up indexer permissions
         self.lambda_index.grant_invoke(iam.ServicePrincipal("s3.amazonaws.com"))
+        bucket.grant_read(self.lambda_index)
         open_search.grant_read_write(self.lambda_index)
 
         # rekognition is non-storage API

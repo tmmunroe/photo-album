@@ -78,3 +78,5 @@ Enjoy!
         curl -X GET https://GUID.execute-api.REGION.amazonaws.com/prod/
 
 sam local invoke PhotoAlbumIndexer --no-event -t ./cdk.out/PhotoAlbumStack.template.json
+
+sam local invoke PhotoAlbumIndexer -e ./s3_put_event.json -t ./cdk.out/PhotoAlbumStack.template.json
