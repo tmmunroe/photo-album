@@ -17,6 +17,10 @@ class PhotoAlbumDataService(Construct):
 
         self.open_search = opensearch.Domain(self, "Domain",
             version=opensearch.EngineVersion.OPENSEARCH_1_3,
+            capacity=opensearch.CapacityConfig(
+                data_node_instance_type='t3.small.search',
+                master_node_instance_type='t3.small.search'
+            ),
             ebs=opensearch.EbsOptions(
                 volume_size=10,
                 volume_type=ec2.EbsDeviceVolumeType.GP2
