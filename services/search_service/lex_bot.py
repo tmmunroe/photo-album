@@ -28,68 +28,69 @@ def genPlainTextMessage(message):
     )
 
 class PhotoSearchServiceLexBot(Construct):
-    #create bot
-    cfn_bot = lex.CfnBot(self, 
-        "PhotoSearchServiceLexBot",
-        description="Lex Bot for Photo Search Service Query Disambiguation",
-        data_privacy=data_privacy,
-        idle_session_ttl_in_seconds=60,
-        name="PhotoSearchServiceLexTemplate",
-        role_arn="roleArn",
+    def __init__(self, scope: Construct, id: str, **kwargs):
+        super().__init__(scope, id)
+        #create bot
+        cfn_bot = lex.CfnBot(self, 
+            "PhotoSearchServiceLexBot",
+            description="Lex Bot for Photo Search Service Query Disambiguation",
+            data_privacy=None,
+            idle_session_ttl_in_seconds=60,
+            name="PhotoSearchServiceLexTemplate",
+            role_arn="roleArn",
 
-        bot_locales=[
-            lex.CfnBot.BotLocaleProperty(
-                locale_id="en_US",
-                description="Photo Album Search Service Locale",
-                voice_settings=lex.CfnBot.VoiceSettingsProperty(voice_id="Ivy"),
-                nlu_confidence_threshold=0.4,
-                intents=[
-                    lex.CfnBot.IntentProperty(
-                        name="SearchQuery",
-                        description="Receive a search query request",
-                        sample_utterances=genUtterances([
-                            "Show me {SearchQuery}",
-                            "Let's see {SearchQuery}",
-                            "Images of {SearchQuery}",
-                            "Pictures of {SearchQuery}",
-                            "I want to see {SearchQuery}",
-                            "{SearchQuery}"
-                        ]),
-                        slots=[genSlot("SearchQuery", "AMAZON.SearchQuery", True)],
-                        intent_closing_setting=lex.CfnBot.IntentClosingSettingProperty(
-                            is_active=True,
-                            closing_response=genPlainTextMessage("{SearchQuery}"),
-                        ),
+            bot_locales=[
+                lex.CfnBot.BotLocaleProperty(
+                    locale_id="en_US",
+                    description="Photo Album Search Service Locale",
+                    voice_settings=lex.CfnBot.VoiceSettingsProperty(voice_id="Ivy"),
+                    nlu_confidence_threshold=0.4,
+                    intents=[
+                        lex.CfnBot.IntentProperty(
+                            name="SearchQuery",
+                            description="Receive a search query request",
+                            sample_utterances=genUtterances([
+                                "Show me {SearchQuery}",
+                                "Let's see {SearchQuery}",
+                                "Images of {SearchQuery}",
+                                "Pictures of {SearchQuery}",
+                                "I want to see {SearchQuery}",
+                                "{SearchQuery}"
+                            ]),
+                            slots=[genSlot("SearchQuery", "AMAZON.SearchQuery", True)],
+                            intent_closing_setting=lex.CfnBot.IntentClosingSettingProperty(
+                                is_active=True,
+                                closing_response=genPlainTextMessage("{SearchQuery}"),
+                            ),
 
-                    )
-                ]
-            )
-        ]
-    )
-
-
-    #create bot version
-    bot_version = lex.CfnBotVersion(self, "PhotoSearchServiceLexBotVersion",
-        bot_id=cfn_bot.attr_id,
-        bot_version_locale_specification=[
-            lex.CfnBotVersion.BotVersionLocaleSpecificationProperty(
-                locale_id="en_US"
-                bot_version_locale_details=lex.CfnBotVersion.BotVersionLocaleDetailsProperty(
-                    source_bot_version="DRAFT"
-                ),
-            )
-        ],
-    )
-
-    bot_version.add_depends_on(cfn_bot)
+                        )
+                    ]
+                )
+            ]
+        )
 
 
+        #create bot version
+        bot_version = lex.CfnBotVersion(self, "PhotoSearchServiceLexBotVersion",
+            bot_id=cfn_bot.attr_id,
+            bot_version_locale_specification=[
+                lex.CfnBotVersion.BotVersionLocaleSpecificationProperty(
+                    locale_id="en_US",
+                    bot_version_locale_details=lex.CfnBotVersion.BotVersionLocaleDetailsProperty(
+                        source_bot_version="DRAFT"),
+                )
+            ],
+        )
 
-    #create bot alias
-    bot_alias = lex.CfnBotAliascfn_bot_alias = lex.CfnBotAlias(self, "PhotoSearchServiceLexBotAlias",
-        bot_alias_name="PhotoSearchServiceLexBotAlias",
-        bot_id=cfn_bot.attr_id,
-        bot_version=bot_version.attr_bot_version
-    )
+        bot_version.add_depends_on(cfn_bot)
 
-    bot_alias.add_depends_on(bot_version)
+
+
+        #create bot alias
+        bot_alias = lex.CfnBotAliascfn_bot_alias = lex.CfnBotAlias(self, "PhotoSearchServiceLexBotAlias",
+            bot_alias_name="PhotoSearchServiceLexBotAlias",
+            bot_id=cfn_bot.attr_id,
+            bot_version=bot_version.attr_bot_version
+        )
+
+        bot_alias.add_depends_on(bot_version)
