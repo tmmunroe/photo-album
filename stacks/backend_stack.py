@@ -27,9 +27,9 @@ class PhotoAlbumStack(cdk.Stack):
             bucket=bucket, open_search_domain=open_search, open_search_index=open_search_index,
             lambda_layer=lambda_layer_wrapper.layer)
         
-        # search_service = PhotoSearchService(self, "PhotoSearchService", 
-            # bucket=bucket, open_search_domain=open_search, open_search_index=open_search_index,
-            # lambda_layer=lambda_layer_wrapper.layer)
+        search_service = PhotoSearchService(self, "PhotoSearchService", 
+            bucket=bucket, open_search_domain=open_search, open_search_index=open_search_index,
+            lambda_layer=lambda_layer_wrapper.layer)
 
         # api = apigateway.RestApi(self, "photo-api",
         #         rest_api_name="Photo Album Service",

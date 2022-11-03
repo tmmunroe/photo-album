@@ -29,5 +29,5 @@ class PhotoSearchService(Construct):
         
         # set up permissions for search
         bucket.grant_read_write(self.lambda_search)
-        open_search_domain.grant_read(self.lambda_search)
+        open_search_domain.grant_read_write(self.lambda_search)
 
