@@ -3,10 +3,12 @@ import boto3
 import datetime
 import json
 import os
+from opensearchpy import OpenSearch
 import requests
 from requests_aws4auth import AWS4Auth
 import urllib.parse
-
+from opensearchpy import OpenSearch, RequestsHttpConnection
+import boto3
 
 s3 = boto3.client('s3')
 rekognition = boto3.client('rekognition')
@@ -15,27 +17,28 @@ min_confidence = 0.6
 max_labels = 10
 
 
-def requests_aws_auth():
+def opensearch_aws_auth():
     credentials = boto3.Session().get_credentials()
     return AWS4Auth(credentials.access_key, credentials.secret_key, 
         'us-east-1', 'es', session_token=credentials.token)
 
 
 def post_to_opensearch(labeled_bucket_info):
-    url = os.getenv('OPENSEARCH_URL')
+    host = os.getenv('OPENSEARCH_HOST')
     index = os.getenv('OPENSEARCH_INDEX')
-    index_endpoint = f'https://{url}/{index}/_doc'
-    awsauth = requests_aws_auth()
-    
-    print(f"Posting to OpenSearch endpoint: {index_endpoint}")
-    response = requests.post(
-        url=index_endpoint,
-        auth=awsauth,
-        json=labeled_bucket_info,
-        headers={'Content-Type': 'application/json'}
+    awsauth = opensearch_aws_auth()
+
+    search = OpenSearch(
+        hosts = [{'host': host, 'port': 443}],
+        http_auth = awsauth,
+        use_ssl = True,
+        verify_certs = True,
+        connection_class = RequestsHttpConnection
     )
 
-    print(f"OpenSearch response: {response.text}")
+    response = search.index(index=index, body=labeled_bucket_info)
+    
+    print(f"OpenSearch response: {response}")
     return response
 
 

@@ -22,7 +22,7 @@ class PhotoSearchService(Construct):
                     handler="search_photos.lambda_handler",
                     environment=dict(
                         BUCKET=bucket.bucket_name,
-                        OPENSEARCH_URL=open_search_domain.domain_endpoint,
+                        OPENSEARCH_HOST=open_search_domain.domain_endpoint,
                         OPENSEARCH_INDEX=open_search_index),
                     layers=[lambda_layer]
                     )
