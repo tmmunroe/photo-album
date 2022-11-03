@@ -38,8 +38,8 @@ def post_to_opensearch(labeled_bucket_info):
     )
 
     print(f"OpenSearch response: {response}")
+    return response
 
-        
 
 def get_labels(bucket, key):
     try:
@@ -81,5 +81,7 @@ def lambda_handler(event, context):
         "labels": labels
     }
     print(labeled_bucket_info)
+
+    post_to_opensearch(labeled_bucket_info)
 
     

@@ -29,4 +29,5 @@ class PhotoAlbumDataService(Construct):
             # security_groups=None,
             encryption_at_rest=opensearch.EncryptionAtRestOptions(
                 enabled=True
-            ))
+            ),
+            removal_policy=cdk.RemovalPolicy.DESTROY)

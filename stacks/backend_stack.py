@@ -2,9 +2,10 @@ import aws_cdk as cdk
 import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_apigateway as apigateway
 import aws_cdk.aws_iam as iam
+import aws_cdk.aws_appsync as appsync
 
 from constructs import Construct
-from services.lambda_layer import PythonLambdaLayer
+from services.lambda_layer import PythonLambdaLayerWrapper
 from services.data_service.data_service import PhotoAlbumDataService
 from services.index_service.photo_index_service import PhotoIndexService
 from services.search_service.photo_search_service import PhotoSearchService
@@ -15,22 +16,22 @@ class PhotoAlbumStack(cdk.Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        lambda_layer = PythonLambdaLayer(self, "PythonLambdaLayer")
+        lambda_layer_wrapper = PythonLambdaLayerWrapper(self, "PythonLambdaLayerTier")
         data_tier = PhotoAlbumDataService(self, "PhotoAlbumDataTier")
 
         bucket = data_tier.bucket
         open_search = data_tier.open_search
 
         index_service = PhotoIndexService(self, "PhotoIndexService", 
-            bucket=bucket, open_search=open_search, lambda_layer=lambda_layer)
+            bucket=bucket, open_search=open_search, lambda_layer=lambda_layer_wrapper.layer)
         
         # search_service = PhotoSearchService(self, "PhotoSearchService", 
         #     bucket=bucket, open_search=open_search, lambda_layer=lambda_layer)
 
-        # # api = apigateway.RestApi(self, "photo-api",
-        # #         rest_api_name="Photo Album Service",
-        # #         description="This service serves photos to clients")
-                
+        # api = apigateway.RestApi(self, "photo-api",
+        #         rest_api_name="Photo Album Service",
+        #         description="This service serves photos to clients")
+        
         # api_definition = apigateway.ApiDefinition.from_asset('api/photo_api.yml')
         # api = apigateway.SpecRestApi(self, "photo-api", api_definition=api_definition)
 
