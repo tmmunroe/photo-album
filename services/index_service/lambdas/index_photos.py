@@ -14,30 +14,28 @@ rekognition = boto3.client('rekognition')
 min_confidence = 0.6
 max_labels = 10
 
-opensearch_index = 'photo-album'
 
 def requests_aws_auth():
     credentials = boto3.Session().get_credentials()
-    return AWS4Auth(credentials.access_key, 
-        credentials.secret_key,
-        region='us-east-1',
-        service='es',
-        session_token=credentials.token)
+    return AWS4Auth(credentials.access_key, credentials.secret_key, 
+        'us-east-1', 'es', session_token=credentials.token)
 
 
 def post_to_opensearch(labeled_bucket_info):
-    url = os.getenv['OPENSEARCH_URL']
-    index_endpoint = f'{url}/photo-album/_doc'
+    url = os.getenv('OPENSEARCH_URL')
+    index = os.getenv('OPENSEARCH_INDEX')
+    index_endpoint = f'https://{url}/{index}/_doc'
     awsauth = requests_aws_auth()
     
+    print(f"Posting to OpenSearch endpoint: {index_endpoint}")
     response = requests.post(
         url=index_endpoint,
         auth=awsauth,
-        data=labeled_bucket_info,
+        json=labeled_bucket_info,
         headers={'Content-Type': 'application/json'}
     )
 
-    print(f"OpenSearch response: {response}")
+    print(f"OpenSearch response: {response.text}")
     return response
 
 

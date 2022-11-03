@@ -8,7 +8,8 @@ from aws_cdk import (aws_s3 as s3,
 class PhotoSearchService(Construct):
     def __init__(self, scope: Construct, id: str, *, 
                 bucket: s3.Bucket,
-                open_search: opensearch.Domain,
+                open_search_domain: opensearch.Domain,
+                open_search_index: str,
                 lambda_layer: lambda_.LayerVersion,
                 **kwargs):
         super().__init__(scope, id)
@@ -21,11 +22,12 @@ class PhotoSearchService(Construct):
                     handler="search_photos.lambda_handler",
                     environment=dict(
                         BUCKET=bucket.bucket_name,
-                        OPENSEARCH_URL=open_search.domain_endpoint),
+                        OPENSEARCH_URL=open_search_domain.domain_endpoint,
+                        OPENSEARCH_INDEX=open_search_index),
                     layers=[lambda_layer]
                     )
         
         # set up permissions for search
         bucket.grant_read_write(self.lambda_search)
-        open_search.grant_read(self.lambda_search)
+        open_search_domain.grant_read(self.lambda_search)
 
