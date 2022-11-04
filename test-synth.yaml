@@ -1,0 +1,647 @@
+Resources:
+  PythonLambdaLayerTierPythonLambdaLayerCoreEBDD0798:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      Content:
+        S3Bucket: cdk-hnb659fds-assets-756059218166-us-east-1
+        S3Key: 31db9965a2a8fabad19014d98757bc771c8917a7dbb824aedb92b91bb639ffb2.zip
+      CompatibleRuntimes:
+        - python3.9
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PythonLambdaLayerTier/PythonLambdaLayerCore/Resource
+      aws:asset:path: asset.31db9965a2a8fabad19014d98757bc771c8917a7dbb824aedb92b91bb639ffb2
+      aws:asset:is-bundled: false
+      aws:asset:property: Content
+  PhotoAlbumDataTierPhotoAlbumS3B365F39C:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags:
+        - Key: aws-cdk:auto-delete-objects
+          Value: "true"
+      VersioningConfiguration:
+        Status: Enabled
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoAlbumDataTier/PhotoAlbumS3/Resource
+  PhotoAlbumDataTierPhotoAlbumS3PolicyC8E94276:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: PhotoAlbumDataTierPhotoAlbumS3B365F39C
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:List*
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::GetAtt:
+                  - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+                  - Arn
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumDataTierPhotoAlbumS3B365F39C
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumDataTierPhotoAlbumS3B365F39C
+                        - Arn
+                    - /*
+          - Action:
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+            Effect: Allow
+            Principal:
+              Service: rekognition.amazonaws.com
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumDataTierPhotoAlbumS3B365F39C
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumDataTierPhotoAlbumS3B365F39C
+                        - Arn
+                    - /*
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoAlbumDataTier/PhotoAlbumS3/Policy/Resource
+  PhotoAlbumDataTierPhotoAlbumS3AutoDeleteObjectsCustomResourceAA900504:
+    Type: Custom::S3AutoDeleteObjects
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F
+          - Arn
+      BucketName:
+        Ref: PhotoAlbumDataTierPhotoAlbumS3B365F39C
+    DependsOn:
+      - PhotoAlbumDataTierPhotoAlbumS3PolicyC8E94276
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoAlbumDataTier/PhotoAlbumS3/AutoDeleteObjectsCustomResource/Default
+  PhotoAlbumDataTierPhotoAlbumS3NotificationsDE94FAF2:
+    Type: Custom::S3BucketNotifications
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - BucketNotificationsHandler050a0587b7544547bf325f094a3db8347ECC3691
+          - Arn
+      BucketName:
+        Ref: PhotoAlbumDataTierPhotoAlbumS3B365F39C
+      NotificationConfiguration:
+        LambdaFunctionConfigurations:
+          - Events:
+              - s3:ObjectCreated:*
+            LambdaFunctionArn:
+              Fn::GetAtt:
+                - PhotoIndexServicePhotoAlbumIndexer1CF9FCF3
+                - Arn
+      Managed: true
+    DependsOn:
+      - PhotoAlbumDataTierPhotoAlbumS3AllowBucketNotificationsToPhotoAlbumStackPhotoIndexServicePhotoAlbumIndexer3A9528033913DF56
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoAlbumDataTier/PhotoAlbumS3/Notifications/Resource
+  PhotoAlbumDataTierPhotoAlbumS3AllowBucketNotificationsToPhotoAlbumStackPhotoIndexServicePhotoAlbumIndexer3A9528033913DF56:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - PhotoIndexServicePhotoAlbumIndexer1CF9FCF3
+          - Arn
+      Principal: s3.amazonaws.com
+      SourceAccount: "756059218166"
+      SourceArn:
+        Fn::GetAtt:
+          - PhotoAlbumDataTierPhotoAlbumS3B365F39C
+          - Arn
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoAlbumDataTier/PhotoAlbumS3/AllowBucketNotificationsToPhotoAlbumStackPhotoIndexServicePhotoAlbumIndexer3A952803
+  PhotoAlbumDataTierPhotoAlbumOpenSearchA1E86EBA:
+    Type: AWS::OpenSearchService::Domain
+    Properties:
+      ClusterConfig:
+        DedicatedMasterEnabled: false
+        InstanceCount: 1
+        InstanceType: t3.small.search
+        ZoneAwarenessEnabled: false
+      DomainEndpointOptions:
+        EnforceHTTPS: false
+        TLSSecurityPolicy: Policy-Min-TLS-1-0-2019-07
+      EBSOptions:
+        EBSEnabled: true
+        VolumeSize: 10
+        VolumeType: gp2
+      EncryptionAtRestOptions:
+        Enabled: true
+      EngineVersion: OpenSearch_1.3
+      LogPublishingOptions: {}
+      NodeToNodeEncryptionOptions:
+        Enabled: true
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoAlbumDataTier/PhotoAlbumOpenSearch/Resource
+  CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      ManagedPolicyArns:
+        - Fn::Sub: arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role
+  CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: cdk-hnb659fds-assets-756059218166-us-east-1
+        S3Key: 3f51abb709b8e65167a45aeed02bab11540603d909005d7148230ba5ce6c74d7.zip
+      Timeout: 900
+      MemorySize: 128
+      Handler: __entrypoint__.handler
+      Role:
+        Fn::GetAtt:
+          - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+          - Arn
+      Runtime: nodejs14.x
+      Description:
+        Fn::Join:
+          - ""
+          - - "Lambda function for auto-deleting objects in "
+            - Ref: PhotoAlbumDataTierPhotoAlbumS3B365F39C
+            - " S3 bucket."
+    DependsOn:
+      - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler
+      aws:asset:path: asset.3f51abb709b8e65167a45aeed02bab11540603d909005d7148230ba5ce6c74d7
+      aws:asset:property: Code
+  PhotoIndexServicePhotoAlbumIndexerServiceRole28534A8C:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoIndexService/PhotoAlbumIndexer/ServiceRole/Resource
+  PhotoIndexServicePhotoAlbumIndexerServiceRoleDefaultPolicy56EDB5CE:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumDataTierPhotoAlbumS3B365F39C
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumDataTierPhotoAlbumS3B365F39C
+                        - Arn
+                    - /*
+          - Action:
+              - es:ESHttpDelete
+              - es:ESHttpGet
+              - es:ESHttpHead
+              - es:ESHttpPatch
+              - es:ESHttpPost
+              - es:ESHttpPut
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumDataTierPhotoAlbumOpenSearchA1E86EBA
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumDataTierPhotoAlbumOpenSearchA1E86EBA
+                        - Arn
+                    - /*
+          - Action: rekognition:DetectLabels
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: PhotoIndexServicePhotoAlbumIndexerServiceRoleDefaultPolicy56EDB5CE
+      Roles:
+        - Ref: PhotoIndexServicePhotoAlbumIndexerServiceRole28534A8C
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoIndexService/PhotoAlbumIndexer/ServiceRole/DefaultPolicy/Resource
+  PhotoIndexServicePhotoAlbumIndexer1CF9FCF3:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: cdk-hnb659fds-assets-756059218166-us-east-1
+        S3Key: 716b07c592c849e00b23d9c8d3bcab5765bdabbc0d189afc5b02156bb4610684.zip
+      Role:
+        Fn::GetAtt:
+          - PhotoIndexServicePhotoAlbumIndexerServiceRole28534A8C
+          - Arn
+      Environment:
+        Variables:
+          BUCKET:
+            Ref: PhotoAlbumDataTierPhotoAlbumS3B365F39C
+          OPENSEARCH_HOST:
+            Fn::GetAtt:
+              - PhotoAlbumDataTierPhotoAlbumOpenSearchA1E86EBA
+              - DomainEndpoint
+          OPENSEARCH_INDEX: photo-album
+      Handler: index_photos.lambda_handler
+      Layers:
+        - Ref: PythonLambdaLayerTierPythonLambdaLayerCoreEBDD0798
+      Runtime: python3.9
+    DependsOn:
+      - PhotoIndexServicePhotoAlbumIndexerServiceRoleDefaultPolicy56EDB5CE
+      - PhotoIndexServicePhotoAlbumIndexerServiceRole28534A8C
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoIndexService/PhotoAlbumIndexer/Resource
+      aws:asset:path: asset.716b07c592c849e00b23d9c8d3bcab5765bdabbc0d189afc5b02156bb4610684
+      aws:asset:is-bundled: false
+      aws:asset:property: Code
+  PhotoIndexServicePhotoAlbumIndexerInvoke7Tjz5KX7GRQDyjRPBytArERKUwy73V0WhTiHDj2lAwECA071A1:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - PhotoIndexServicePhotoAlbumIndexer1CF9FCF3
+          - Arn
+      Principal: s3.amazonaws.com
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoIndexService/PhotoAlbumIndexer/Invoke7Tjz5KX7GRQDyjRPBytArERKUwy7+3V0WhTiHDj2lAw=
+  BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/Resource
+  BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: s3:PutBucketNotification
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36
+      Roles:
+        - Ref: BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/DefaultPolicy/Resource
+  BucketNotificationsHandler050a0587b7544547bf325f094a3db8347ECC3691:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: AWS CloudFormation handler for "Custom::S3BucketNotifications" resources (@aws-cdk/aws-s3)
+      Code:
+        ZipFile: |
+          import boto3  # type: ignore
+          import json
+          import logging
+          import urllib.request
+
+          s3 = boto3.client("s3")
+
+          EVENTBRIDGE_CONFIGURATION = 'EventBridgeConfiguration'
+
+          CONFIGURATION_TYPES = ["TopicConfigurations", "QueueConfigurations", "LambdaFunctionConfigurations"]
+
+          def handler(event: dict, context):
+            response_status = "SUCCESS"
+            error_message = ""
+            try:
+              props = event["ResourceProperties"]
+              bucket = props["BucketName"]
+              notification_configuration = props["NotificationConfiguration"]
+              request_type = event["RequestType"]
+              managed = props.get('Managed', 'true').lower() == 'true'
+              stack_id = event['StackId']
+
+              if managed:
+                config = handle_managed(request_type, notification_configuration)
+              else:
+                config = handle_unmanaged(bucket, stack_id, request_type, notification_configuration)
+
+              put_bucket_notification_configuration(bucket, config)
+            except Exception as e:
+              logging.exception("Failed to put bucket notification configuration")
+              response_status = "FAILED"
+              error_message = f"Error: {str(e)}. "
+            finally:
+              submit_response(event, context, response_status, error_message)
+
+          def handle_managed(request_type, notification_configuration):
+            if request_type == 'Delete':
+              return {}
+            return notification_configuration
+
+          def handle_unmanaged(bucket, stack_id, request_type, notification_configuration):
+            external_notifications = find_external_notifications(bucket, stack_id)
+
+            if request_type == 'Delete':
+              return external_notifications
+
+            def with_id(notification):
+              notification['Id'] = f"{stack_id}-{hash(json.dumps(notification, sort_keys=True))}"
+              return notification
+
+            notifications = {}
+            for t in CONFIGURATION_TYPES:
+              external = external_notifications.get(t, [])
+              incoming = [with_id(n) for n in notification_configuration.get(t, [])]
+              notifications[t] = external + incoming
+
+            if EVENTBRIDGE_CONFIGURATION in notification_configuration:
+              notifications[EVENTBRIDGE_CONFIGURATION] = notification_configuration[EVENTBRIDGE_CONFIGURATION]
+            elif EVENTBRIDGE_CONFIGURATION in external_notifications:
+              notifications[EVENTBRIDGE_CONFIGURATION] = external_notifications[EVENTBRIDGE_CONFIGURATION]
+
+            return notifications
+
+          def find_external_notifications(bucket, stack_id):
+            existing_notifications = get_bucket_notification_configuration(bucket)
+            external_notifications = {}
+            for t in CONFIGURATION_TYPES:
+              external_notifications[t] = [n for n in existing_notifications.get(t, []) if not n['Id'].startswith(f"{stack_id}-")]
+
+            if EVENTBRIDGE_CONFIGURATION in existing_notifications:
+              external_notifications[EVENTBRIDGE_CONFIGURATION] = existing_notifications[EVENTBRIDGE_CONFIGURATION]
+
+            return external_notifications
+
+          def get_bucket_notification_configuration(bucket):
+            return s3.get_bucket_notification_configuration(Bucket=bucket)
+
+          def put_bucket_notification_configuration(bucket, notification_configuration):
+            s3.put_bucket_notification_configuration(Bucket=bucket, NotificationConfiguration=notification_configuration)
+
+          def submit_response(event: dict, context, response_status: str, error_message: str):
+            response_body = json.dumps(
+              {
+                "Status": response_status,
+                "Reason": f"{error_message}See the details in CloudWatch Log Stream: {context.log_stream_name}",
+                "PhysicalResourceId": event.get("PhysicalResourceId") or event["LogicalResourceId"],
+                "StackId": event["StackId"],
+                "RequestId": event["RequestId"],
+                "LogicalResourceId": event["LogicalResourceId"],
+                "NoEcho": False,
+              }
+            ).encode("utf-8")
+            headers = {"content-type": "", "content-length": str(len(response_body))}
+            try:
+              req = urllib.request.Request(url=event["ResponseURL"], headers=headers, data=response_body, method="PUT")
+              with urllib.request.urlopen(req) as response:
+                print(response.read().decode("utf-8"))
+              print("Status code: " + response.reason)
+            except Exception as e:
+                print("send(..) failed executing request.urlopen(..): " + str(e))
+      Handler: index.handler
+      Role:
+        Fn::GetAtt:
+          - BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC
+          - Arn
+      Runtime: python3.7
+      Timeout: 300
+    DependsOn:
+      - BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36
+      - BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Resource
+  PhotoSearchServicePhotoAlbumSearcherServiceRoleE180B6BA:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoSearchService/PhotoAlbumSearcher/ServiceRole/Resource
+  PhotoSearchServicePhotoAlbumSearcherServiceRoleDefaultPolicyA1EC6053:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:Abort*
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+              - s3:PutObject
+              - s3:PutObjectLegalHold
+              - s3:PutObjectRetention
+              - s3:PutObjectTagging
+              - s3:PutObjectVersionTagging
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumDataTierPhotoAlbumS3B365F39C
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumDataTierPhotoAlbumS3B365F39C
+                        - Arn
+                    - /*
+          - Action:
+              - es:ESHttpDelete
+              - es:ESHttpGet
+              - es:ESHttpHead
+              - es:ESHttpPatch
+              - es:ESHttpPost
+              - es:ESHttpPut
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumDataTierPhotoAlbumOpenSearchA1E86EBA
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumDataTierPhotoAlbumOpenSearchA1E86EBA
+                        - Arn
+                    - /*
+        Version: "2012-10-17"
+      PolicyName: PhotoSearchServicePhotoAlbumSearcherServiceRoleDefaultPolicyA1EC6053
+      Roles:
+        - Ref: PhotoSearchServicePhotoAlbumSearcherServiceRoleE180B6BA
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoSearchService/PhotoAlbumSearcher/ServiceRole/DefaultPolicy/Resource
+  PhotoSearchServicePhotoAlbumSearcher8B9DCC3A:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: cdk-hnb659fds-assets-756059218166-us-east-1
+        S3Key: 43d6fd7af164b02d775447f79d92976039889fc9cdbdd2098354fe5f9fa8c838.zip
+      Role:
+        Fn::GetAtt:
+          - PhotoSearchServicePhotoAlbumSearcherServiceRoleE180B6BA
+          - Arn
+      Environment:
+        Variables:
+          BUCKET:
+            Ref: PhotoAlbumDataTierPhotoAlbumS3B365F39C
+          OPENSEARCH_HOST:
+            Fn::GetAtt:
+              - PhotoAlbumDataTierPhotoAlbumOpenSearchA1E86EBA
+              - DomainEndpoint
+          OPENSEARCH_INDEX: photo-album
+      Handler: search_photos.lambda_handler
+      Layers:
+        - Ref: PythonLambdaLayerTierPythonLambdaLayerCoreEBDD0798
+      Runtime: python3.9
+    DependsOn:
+      - PhotoSearchServicePhotoAlbumSearcherServiceRoleDefaultPolicyA1EC6053
+      - PhotoSearchServicePhotoAlbumSearcherServiceRoleE180B6BA
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoSearchService/PhotoAlbumSearcher/Resource
+      aws:asset:path: asset.43d6fd7af164b02d775447f79d92976039889fc9cdbdd2098354fe5f9fa8c838
+      aws:asset:is-bundled: false
+      aws:asset:property: Code
+  PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotDAD9D708:
+    Type: AWS::Lex::Bot
+    Properties:
+      DataPrivacy:
+        ChildDirected: false
+      IdleSessionTTLInSeconds: 60
+      Name: PhotoSearchServiceLexTemplate
+      RoleArn: roleArn
+      BotLocales:
+        - Description: Photo Album Search Service Locale
+          Intents:
+            - Description: Receive a search query request
+              IntentClosingSetting:
+                ClosingResponse:
+                  MessageGroupsList:
+                    - Message:
+                        PlainTextMessage:
+                          Value: "{SearchQuery}"
+                IsActive: true
+              Name: SearchIntent
+              SampleUtterances:
+                - Utterance: Show me {SearchQuery}
+                - Utterance: Let's see {SearchQuery}
+                - Utterance: Images of {SearchQuery}
+                - Utterance: Pictures of {SearchQuery}
+                - Utterance: I want to see {SearchQuery}
+                - Utterance: "{SearchQuery}"
+              Slots:
+                - MultipleValuesSetting:
+                    AllowMultipleValues: true
+                  Name: SearchQuery
+                  SlotTypeName: AMAZON.SearchQuery
+                  ValueElicitationSetting:
+                    SlotConstraint: Required
+          LocaleId: en_US
+          NluConfidenceThreshold: 0.4
+          VoiceSettings:
+            VoiceId: Ivy
+      Description: Lex Bot for Photo Search Service Query Disambiguation
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoSearchService/PhotoSearchServiceLex/PhotoSearchServiceLexBot
+  PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotVersionA9B22D33:
+    Type: AWS::Lex::BotVersion
+    Properties:
+      BotId:
+        Fn::GetAtt:
+          - PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotDAD9D708
+          - Id
+      BotVersionLocaleSpecification:
+        - BotVersionLocaleDetails:
+            SourceBotVersion: DRAFT
+          LocaleId: en_US
+    DependsOn:
+      - PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotDAD9D708
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoSearchService/PhotoSearchServiceLex/PhotoSearchServiceLexBotVersion
+  PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotAlias92A7AAFC:
+    Type: AWS::Lex::BotAlias
+    Properties:
+      BotAliasName: PhotoSearchServiceLexBotAlias1
+      BotId:
+        Fn::GetAtt:
+          - PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotDAD9D708
+          - Id
+      BotVersion:
+        Fn::GetAtt:
+          - PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotVersionA9B22D33
+          - BotVersion
+    DependsOn:
+      - PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotVersionA9B22D33
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoSearchService/PhotoSearchServiceLex/PhotoSearchServiceLexBotAlias
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/12QwU7DMBBEv6V3ZylUiHNbxIlDFCSuless7RLbi7xOIbL87yRxS4HTvBnLs2vfwf0Slgv9KZVpu8rSHtJL1KZTY7RLVrt9qyE96wHDKwYh9mr75v/7GoMjmd1T7008xxfOSlY7LYJRYD3J6CFtetNh3GhBVXC6cqYiNVsywzUuPiv+QC+ogzkKhhMZhPTITtM8tFBWpB2khi1O4azXukuRxS9IUz2X4Rx/PWp0a0taclbz0uO/HMgf1LaXyK5B4T6Y0v7Df47qwCdqMWRVD/HI/mYFt0t4WLwLURV6H8khNEW/AYFkQW6JAQAA
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/CDKMetadata/Default
+Parameters:
+  BootstrapVersion:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cdk-bootstrap/hnb659fds/version
+    Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
+Rules:
+  CheckBootstrapVersion:
+    Assertions:
+      - Assert:
+          Fn::Not:
+            - Fn::Contains:
+                - - "1"
+                  - "2"
+                  - "3"
+                  - "4"
+                  - "5"
+                - Ref: BootstrapVersion
+        AssertDescription: CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.
+

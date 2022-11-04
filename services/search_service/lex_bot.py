@@ -21,7 +21,7 @@ def genPlainTextMessage(message):
         message_groups_list=[lex.CfnBot.MessageGroupProperty(
             message=lex.CfnBot.MessageProperty(
                 plain_text_message=lex.CfnBot.PlainTextMessageProperty(
-                    value={message}
+                    value=message
                 )
             ),
         )],
@@ -31,10 +31,12 @@ class PhotoSearchServiceLexBot(Construct):
     def __init__(self, scope: Construct, id: str, **kwargs):
         super().__init__(scope, id)
         #create bot
-        cfn_bot = lex.CfnBot(self, 
+        self.cfn_bot = lex.CfnBot(self, 
             "PhotoSearchServiceLexBot",
             description="Lex Bot for Photo Search Service Query Disambiguation",
-            data_privacy=None,
+            data_privacy={
+                "ChildDirected": False,
+            },
             idle_session_ttl_in_seconds=60,
             name="PhotoSearchServiceLexTemplate",
             role_arn="roleArn",
@@ -47,7 +49,7 @@ class PhotoSearchServiceLexBot(Construct):
                     nlu_confidence_threshold=0.4,
                     intents=[
                         lex.CfnBot.IntentProperty(
-                            name="SearchQuery",
+                            name="SearchIntent",
                             description="Receive a search query request",
                             sample_utterances=genUtterances([
                                 "Show me {SearchQuery}",
@@ -71,8 +73,8 @@ class PhotoSearchServiceLexBot(Construct):
 
 
         #create bot version
-        bot_version = lex.CfnBotVersion(self, "PhotoSearchServiceLexBotVersion",
-            bot_id=cfn_bot.attr_id,
+        self.cfn_bot_version = lex.CfnBotVersion(self, "PhotoSearchServiceLexBotVersion",
+            bot_id=self.cfn_bot.attr_id,
             bot_version_locale_specification=[
                 lex.CfnBotVersion.BotVersionLocaleSpecificationProperty(
                     locale_id="en_US",
@@ -82,15 +84,15 @@ class PhotoSearchServiceLexBot(Construct):
             ],
         )
 
-        bot_version.add_depends_on(cfn_bot)
+        self.cfn_bot_version.add_depends_on(self.cfn_bot)
 
 
 
         #create bot alias
-        bot_alias = lex.CfnBotAliascfn_bot_alias = lex.CfnBotAlias(self, "PhotoSearchServiceLexBotAlias",
-            bot_alias_name="PhotoSearchServiceLexBotAlias",
-            bot_id=cfn_bot.attr_id,
-            bot_version=bot_version.attr_bot_version
+        self.cfn_bot_alias = lex.CfnBotAlias(self, "PhotoSearchServiceLexBotAlias",
+            bot_alias_name="PhotoSearchServiceLexBotAlias1",
+            bot_id=self.cfn_bot.attr_id,
+            bot_version=self.cfn_bot_version.attr_bot_version
         )
 
-        bot_alias.add_depends_on(bot_version)
+        self.cfn_bot_alias.add_depends_on(self.cfn_bot_version)

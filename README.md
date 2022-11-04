@@ -80,3 +80,10 @@ Enjoy!
 sam local invoke PhotoAlbumIndexer --no-event -t ./cdk.out/PhotoAlbumStack.template.json
 
 sam local invoke PhotoAlbumIndexer -e ./s3_put_event.json -t ./cdk.out/PhotoAlbumStack.template.json
+
+
+TODO:
+
+use models in the indexing code
+
+handle multiple query terms

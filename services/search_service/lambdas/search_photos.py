@@ -2,16 +2,18 @@ import boto3
 import datetime
 import json
 import os
-from opensearchpy import OpenSearch
 import requests
-from requests_aws4auth import AWS4Auth
-from opensearchpy import OpenSearch, RequestsHttpConnection
+import uuid
+
 from botocore.exceptions import ClientError
+from opensearchpy import OpenSearch, RequestsHttpConnection
 from photo_album_models.open_search_index import OpenSearchIndexModel
 from photo_album_models.photo_info import PhotoInfoModel
 from photo_album_models.search_response import SearchResponseModel
+from requests_aws4auth import AWS4Auth
 
 s3 = boto3.client('s3')
+lex = boto3.client('lexv2-runtime')
 
 
 def opensearch_aws_auth():
@@ -51,9 +53,27 @@ def search_opensearch(query_terms):
     return [ OpenSearchIndexModel.from_dict(hit['_source']) for hit in hits ]
 
 
+def labels_from_text(query):
+    bot_id = os.getenv("LEX_BOT_ID")
+    alias_id = os.getenv("LEX_BOT_ALIAS_ID")
+    
+    response = lex.recognize_text(
+            botId=bot_id,
+            botAliasId=alias_id,
+            localeId='en_US',
+            sessionId=uuid.uuid4(),
+            text=query)
+    print(f"Lex Response: ", response)
+
+    return response
+
+
 def perform_search(query) -> SearchResponseModel:
     response = SearchResponseModel()
 
+    # disambiguate query
+    lex.recogni
+    # search opensearch
     results = search_opensearch(query)
     for result in results:
         photo_url = f'https://{result.bucket}.s3.amazonaws.com/{result.objectKey}'
