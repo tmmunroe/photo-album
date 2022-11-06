@@ -21,7 +21,7 @@ class PhotoAlbumStack(cdk.Stack):
 
         bucket = data_tier.bucket
         open_search = data_tier.open_search
-        open_search_index = 'photo-album'
+        open_search_index = 'photo-album-v1'
 
         index_service = PhotoIndexService(self, "PhotoIndexService", 
             bucket=bucket, open_search_domain=open_search, open_search_index=open_search_index,

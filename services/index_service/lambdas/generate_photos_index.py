@@ -30,22 +30,21 @@ def lambda_handler(event, context):
         connection_class = RequestsHttpConnection
     )
 
-    mappings = {
-        "properties": {
-            "bucket": { "type": "text" },
-            "objectKey": { "type": "text" },
-            "createdTimestamp": { "type": "text" },
-            "labels": {
-                "type": "text",
-                "analyzer": "english"
+    create_params = {
+        "mappings": {
+            "properties": {
+                "bucket": { "type": "text" },
+                "objectKey": { "type": "text" },
+                "createdTimestamp": { "type": "float" },
+                "labels": {
+                    "type": "text",
+                    "analyzer": "english"
+                }
             }
         }
     }
 
-    response = search.indices.put_mapping(
-        index=index,
-        body=mappings
-    )
-    
+    response = search.indices.create(index=index, body=create_params)
     print(f"OpenSearch response: {response}")
+
     return response

@@ -43,7 +43,9 @@ def post_to_opensearch(labeled_bucket_info):
 
 
 def get_labels(bucket, key):
+    labels = []
     try:
+        # get rekognition labels
         response = rekognition.detect_labels(
             Image={
                 'S3Object': {
@@ -54,13 +56,23 @@ def get_labels(bucket, key):
             MaxLabels=max_labels,
             MinConfidence=min_confidence
         )
+        print(f'Rekognition: {response}')
+        rekognition_labels = [label['Name'] for label in response['Labels']]
+        print(f'Rekognition Labels: {rekognition_labels}')
+
+        # get s3 custom labels
+        response = s3.head_object(Bucket=bucket, Key=key)
+        print(f'S3: {response}')
+        custom_labels = response['Metadata'].get('x-amz-meta-customLabels', list())
+        print(f'Custom Labels: {custom_labels}')
+        
+        labels.extend(rekognition_labels + custom_labels)
     except Exception as e:
         print(e)
-        print(f"Error getting {key} from bucket {bucket}")
         raise e
     
-    print(response['Labels'])
-    return [ label['Name'] for label in response['Labels'] ]
+    print(labels)
+    return labels
 
 
 def lambda_handler(event, context):
