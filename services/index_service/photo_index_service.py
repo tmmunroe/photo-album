@@ -15,6 +15,18 @@ class PhotoIndexService(Construct):
                 **kwargs):
         super().__init__(scope, id)
 
+        #set up lambda to create index
+        create_index_lambda = lambda_.Function(self, "PhotoAlbumCreateIndex",
+                    runtime=lambda_.Runtime.PYTHON_3_9,
+                    code=lambda_.Code.from_asset("services/index_service/lambdas"),
+                    handler="generate_photos_index.lambda_handler",
+                    environment=dict(
+                        OPENSEARCH_HOST=open_search_domain.domain_endpoint,
+                        OPENSEARCH_INDEX=open_search_index),
+                    layers=[lambda_layer],
+                    timeout=cdk.Duration.seconds(10)
+                    )
+
         # set up indexer lambda
         self.lambda_index = lambda_.Function(self, "PhotoAlbumIndexer",
                     runtime=lambda_.Runtime.PYTHON_3_9,
@@ -24,7 +36,8 @@ class PhotoIndexService(Construct):
                         BUCKET=bucket.bucket_name,
                         OPENSEARCH_HOST=open_search_domain.domain_endpoint,
                         OPENSEARCH_INDEX=open_search_index),
-                    layers=[lambda_layer]
+                    layers=[lambda_layer],
+                    timeout=cdk.Duration.seconds(10)
                     )
         
         # add notifications for bucket and lambda function
@@ -35,6 +48,7 @@ class PhotoIndexService(Construct):
         self.lambda_index.grant_invoke(iam.ServicePrincipal("s3.amazonaws.com"))
         bucket.grant_read(self.lambda_index)
         open_search_domain.grant_read_write(self.lambda_index)
+        open_search_domain.grant_read_write(create_index_lambda)
         bucket.grant_read(iam.ServicePrincipal("rekognition.amazonaws.com"))
 
         # rekognition is non-storage API

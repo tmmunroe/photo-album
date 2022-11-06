@@ -26,13 +26,16 @@ def opensearch_query(label):
     return {
         "query": {
             "match": {
-                "labels": label
+                "labels": {
+                    "query": label,
+                    "analyzer": "english"
+                }
             }
         }
     }
 
 
-def search_opensearch(query_terms):
+def search_opensearch(search_terms):
     host = os.getenv('OPENSEARCH_HOST')
     index = os.getenv('OPENSEARCH_INDEX')
     awsauth = opensearch_aws_auth()
@@ -44,12 +47,21 @@ def search_opensearch(query_terms):
         verify_certs = True,
         connection_class = RequestsHttpConnection
     )
-    dsl_query = opensearch_query(query_terms)
-    # response = search.msearch()
-    response = search.search(dsl_query)
+
+    dsl_queries = []
+    for term in search_terms:
+        dsl_queries.append({})
+        dsl_queries.append(opensearch_query(term))
+
+    response = search.msearch(dsl_queries)
     
     print(f"OpenSearch response: {response}")
-    hits = response['hits']['hits']
+    hits = []
+    for term, term_response in zip(term, response['responses']):
+        term_hits = term_response['hits']['hits']
+        hits.extend(term_hits)
+        print(f"{term}: found {len(term_hits)}")
+
     return [ OpenSearchIndexModel.from_dict(hit['_source']) for hit in hits ]
 
 
@@ -61,20 +73,27 @@ def labels_from_text(query):
             botId=bot_id,
             botAliasId=alias_id,
             localeId='en_US',
-            sessionId=uuid.uuid4(),
+            sessionId=str(uuid.uuid4()),
             text=query)
+    
     print(f"Lex Response: ", response)
 
-    return response
+    values = response["sessionState"]["intent"]["slots"]["SearchQuery"]["values"]
+    labels = [ value["value"]["interpretedValue"] for value in values ]
+
+    return labels
 
 
 def perform_search(query) -> SearchResponseModel:
     response = SearchResponseModel()
 
     # disambiguate query
-    lex.recogni
+    labels = labels_from_text(query)
+    print(f"Labels: {labels}")
+
     # search opensearch
-    results = search_opensearch(query)
+    results = search_opensearch(labels)
+    print(f"Results: {results}")
     for result in results:
         photo_url = f'https://{result.bucket}.s3.amazonaws.com/{result.objectKey}'
         response.add_photo_info(

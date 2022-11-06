@@ -31,3 +31,4 @@ class PhotoAlbumDataService(Construct):
                 enabled=True
             ),
             removal_policy=cdk.RemovalPolicy.DESTROY)
+            

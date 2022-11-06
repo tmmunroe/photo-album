@@ -1,6 +1,7 @@
 import aws_cdk as cdk
 from constructs import Construct
 from aws_cdk import (aws_s3 as s3,
+                     aws_iam as iam,
                      aws_opensearchservice as opensearch,
                      aws_lambda as lambda_,
                      aws_lex as lex)
@@ -30,6 +31,43 @@ def genPlainTextMessage(message):
 class PhotoSearchServiceLexBot(Construct):
     def __init__(self, scope: Construct, id: str, **kwargs):
         super().__init__(scope, id)
+
+        lex_role = iam.CfnRole(self, "LexV2PhotoSearchRole",
+            role_name="LexV2PhotoSearchRole",
+            assume_role_policy_document={
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "lexv2.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                })
+        
+        lex_policy = iam.CfnPolicy(self, "LexV2PhotoSearchPolicy",
+            policy_name="LexV2PhotoSearchCfnPolicy",
+            policy_document= {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Action": [
+                            "polly:SynthesizeSpeech"
+                        ],
+                        "Resource": "*"
+                    }
+                ]
+            })
+        lex_policy.roles = [lex_role.role_name]
+        lex_policy.add_depends_on(lex_role)
+
         #create bot
         self.cfn_bot = lex.CfnBot(self, 
             "PhotoSearchServiceLexBot",
@@ -39,7 +77,7 @@ class PhotoSearchServiceLexBot(Construct):
             },
             idle_session_ttl_in_seconds=60,
             name="PhotoSearchServiceLexTemplate",
-            role_arn="roleArn",
+            role_arn=lex_role.attr_arn,
 
             bot_locales=[
                 lex.CfnBot.BotLocaleProperty(
@@ -48,6 +86,10 @@ class PhotoSearchServiceLexBot(Construct):
                     voice_settings=lex.CfnBot.VoiceSettingsProperty(voice_id="Ivy"),
                     nlu_confidence_threshold=0.4,
                     intents=[
+                        lex.CfnBot.IntentProperty(
+                            name="FallbackIntent",
+                            parent_intent_signature="AMAZON.FallbackIntent",
+                        ),
                         lex.CfnBot.IntentProperty(
                             name="SearchIntent",
                             description="Receive a search query request",
@@ -59,7 +101,11 @@ class PhotoSearchServiceLexBot(Construct):
                                 "I want to see {SearchQuery}",
                                 "{SearchQuery}"
                             ]),
-                            slots=[genSlot("SearchQuery", "AMAZON.SearchQuery", True)],
+                            slots=[genSlot("SearchQuery", "AMAZON.AlphaNumeric", False)],
+                            slot_priorities=[lex.CfnBot.SlotPriorityProperty(
+                                priority=1,
+                                slot_name="SearchQuery"
+                            )],
                             intent_closing_setting=lex.CfnBot.IntentClosingSettingProperty(
                                 is_active=True,
                                 closing_response=genPlainTextMessage("{SearchQuery}"),
@@ -70,7 +116,6 @@ class PhotoSearchServiceLexBot(Construct):
                 )
             ]
         )
-
 
         #create bot version
         self.cfn_bot_version = lex.CfnBotVersion(self, "PhotoSearchServiceLexBotVersion",
