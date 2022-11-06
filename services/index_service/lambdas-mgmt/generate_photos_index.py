@@ -17,12 +17,11 @@ def opensearch_aws_auth():
         'us-east-1', 'es', session_token=credentials.token)
 
 
-def lambda_handler(event, context):
+def opensearch_client():
     host = os.getenv('OPENSEARCH_HOST')
-    index = os.getenv('OPENSEARCH_INDEX')
     awsauth = opensearch_aws_auth()
 
-    search = OpenSearch(
+    return OpenSearch(
         hosts = [{'host': host, 'port': 443}],
         http_auth = awsauth,
         use_ssl = True,
@@ -30,6 +29,10 @@ def lambda_handler(event, context):
         connection_class = RequestsHttpConnection
     )
 
+
+def create_index():
+    index = os.getenv('OPENSEARCH_INDEX')
+    search_client = opensearch_client()
     create_params = {
         "mappings": {
             "properties": {
@@ -44,7 +47,38 @@ def lambda_handler(event, context):
         }
     }
 
-    response = search.indices.create(index=index, body=create_params)
-    print(f"OpenSearch response: {response}")
+    return search_client.indices.create(index=index, body=create_params)
 
-    return response
+
+def delete_index():
+    index = os.getenv('OPENSEARCH_INDEX')
+    search_client = opensearch_client()
+    return search_client.indices.delete(index)
+
+
+def reset_index():
+    response = delete_index()
+    print('Delete Response: ', response)
+
+    response = create_index()
+    print('Create Response: ', response)
+
+    return ''
+
+
+def lambda_handler(event, context):
+    operation = event.get('operation')
+    if not operation:
+        raise ValueError(f'No operation specified')
+        return None
+
+    if operation == 'create':
+        response = create_index()
+    elif operation == 'delete':
+        response = delete_index()
+    elif operation == 'reset':
+        response = reset_index()
+    else:
+        raise ValueError(f'{operation} not a recognized operation')
+
+    print(f"Response: {response}")

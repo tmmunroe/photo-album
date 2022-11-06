@@ -18,7 +18,7 @@ class PhotoIndexService(Construct):
         #set up lambda to create index
         create_index_lambda = lambda_.Function(self, "PhotoAlbumCreateIndex",
                     runtime=lambda_.Runtime.PYTHON_3_9,
-                    code=lambda_.Code.from_asset("services/index_service/lambdas"),
+                    code=lambda_.Code.from_asset("services/index_service/lambdas-mgmt"),
                     handler="generate_photos_index.lambda_handler",
                     environment=dict(
                         OPENSEARCH_HOST=open_search_domain.domain_endpoint,

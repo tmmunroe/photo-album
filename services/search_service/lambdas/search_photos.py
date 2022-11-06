@@ -53,7 +53,7 @@ def search_opensearch(search_terms):
         dsl_queries.append({})
         dsl_queries.append(opensearch_query(term))
 
-    response = search.msearch(dsl_queries)
+    response = search.msearch(dsl_queries, index=index)
     
     print(f"OpenSearch response: {response}")
     hits = []
