@@ -45,14 +45,16 @@ class PhotoAlbumStack(cdk.Stack):
                 rest_api_name='Photo Album Service',
                 description='This service serves photos to clients',
                 deploy=True,
-                deploy_options=apigateway.StageOptions(stage_name='testStage')
+                deploy_options=apigateway.StageOptions(stage_name='testStage'),
+                binary_media_types=["image/jpeg", "image/jpg", "image/png"]
                 )
         api.add_api_key('PhotoAlbumAPIKey')
 
-        api.root.add_cors_preflight(
+        options_method = api.root.add_cors_preflight(
             allow_origins=apigateway.Cors.ALL_ORIGINS,
             allow_headers=apigateway.Cors.DEFAULT_HEADERS,
             allow_methods=apigateway.Cors.ALL_METHODS,
+            status_code=200
         )
 
         photoModel = api.add_model(
@@ -125,30 +127,44 @@ class PhotoAlbumStack(cdk.Stack):
             ]
         )
 
-        # upload integration for s3
+        # photos integration for s3
         s3_integration_options = apigateway.IntegrationOptions(
             credentials_role=api_role,
+            content_handling=apigateway.ContentHandling.CONVERT_TO_BINARY,
+            passthrough_behavior=apigateway.PassthroughBehavior.WHEN_NO_MATCH,
+            integration_responses=[
+                apigateway.IntegrationResponse(status_code='200'),
+                apigateway.IntegrationResponse(status_code='403'),
+                apigateway.IntegrationResponse(status_code='500')
+            ],
             request_parameters={
                 'integration.request.header.x-amz-meta-customLabels':
-                    'method.request.header.x-amz-meta-customLabels'
+                    'method.request.header.x-amz-meta-customLabels',
+                'integration.request.path.bucket': f"'{bucket.bucket_name}'",
+                'integration.request.path.key': 'method.request.header.imageName',
+                'integration.request.header.Content-Type': 'method.request.header.Content-Type',
             }
         )
-        upload_integration = apigateway.AwsIntegration(
+        photos_integration = apigateway.AwsIntegration(
             service='s3',
             path='{bucket}/{key}',
-            integration_http_method='POST',
+            integration_http_method='PUT',
             options=s3_integration_options
         )
-        upload_resource = api.root.add_resource('upload')
-        upload_resource.add_method('POST',
-            integration=upload_integration,
+        photo_resource = api.root.add_resource('photos')
+        photo_resource.add_method('PUT',
+            integration=photos_integration,
             api_key_required=True,
-            operation_name='uploadPhoto',
+            operation_name='putPhoto',
             request_parameters={
-                'method.request.header.x-amz-meta-customLabels': False
+                'method.request.header.x-amz-meta-customLabels': False,
+                'method.request.header.imageName': True,
+                'method.request.header.Content-Type': False,
             },
             request_models={
-                'image/*': photoModel
+                'image/jpeg': photoModel,
+                'image/png': photoModel,
+                'image/jpg': photoModel,
             },
             method_responses=[
                 apigateway.MethodResponse(status_code='200'),
