@@ -90,6 +90,8 @@ def perform_search(query) -> SearchResponseModel:
     # disambiguate query
     labels = labels_from_text(query)
     print(f"Labels: {labels}")
+    if len(labels) == 0:
+        return response
 
     # search opensearch
     results = search_opensearch(labels)
@@ -118,6 +120,13 @@ def lambda_handler(event, context):
     search_response = perform_search(query)
 
     return {
+        "isBase64Encoded": True,
         "statusCode": 200,
-        "body": search_response.format_response()
+        "headers": {
+            "Access-Control-Allow-Origin": "'*'",
+            "Access-Control-Allow-Credentials": True,
+            "Access-Control-Allow-Methods": "OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD",
+            "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Origin",
+        },
+        "body": json.dumps(search_response.format_response())
     }

@@ -4,14 +4,14 @@ Resources:
     Properties:
       Content:
         S3Bucket: cdk-hnb659fds-assets-756059218166-us-east-1
-        S3Key: 31db9965a2a8fabad19014d98757bc771c8917a7dbb824aedb92b91bb639ffb2.zip
+        S3Key: de23efc62bf17849d8ea7bd5b1c7258ccf284796cab25f4a4576a09cbe3d007c.zip
       CompatibleRuntimes:
         - python3.9
     UpdateReplacePolicy: Delete
     DeletionPolicy: Delete
     Metadata:
       aws:cdk:path: PhotoAlbumStack/PythonLambdaLayerTier/PythonLambdaLayerCore/Resource
-      aws:asset:path: asset.31db9965a2a8fabad19014d98757bc771c8917a7dbb824aedb92b91bb639ffb2
+      aws:asset:path: asset.de23efc62bf17849d8ea7bd5b1c7258ccf284796cab25f4a4576a09cbe3d007c
       aws:asset:is-bundled: false
       aws:asset:property: Content
   PhotoAlbumDataTierPhotoAlbumS3B365F39C:
@@ -191,6 +191,83 @@ Resources:
       aws:cdk:path: PhotoAlbumStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler
       aws:asset:path: asset.3f51abb709b8e65167a45aeed02bab11540603d909005d7148230ba5ce6c74d7
       aws:asset:property: Code
+  PhotoIndexServicePhotoAlbumCreateIndexServiceRoleF52D850C:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoIndexService/PhotoAlbumCreateIndex/ServiceRole/Resource
+  PhotoIndexServicePhotoAlbumCreateIndexServiceRoleDefaultPolicyE17E236D:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - es:ESHttpDelete
+              - es:ESHttpGet
+              - es:ESHttpHead
+              - es:ESHttpPatch
+              - es:ESHttpPost
+              - es:ESHttpPut
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumDataTierPhotoAlbumOpenSearchA1E86EBA
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumDataTierPhotoAlbumOpenSearchA1E86EBA
+                        - Arn
+                    - /*
+        Version: "2012-10-17"
+      PolicyName: PhotoIndexServicePhotoAlbumCreateIndexServiceRoleDefaultPolicyE17E236D
+      Roles:
+        - Ref: PhotoIndexServicePhotoAlbumCreateIndexServiceRoleF52D850C
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoIndexService/PhotoAlbumCreateIndex/ServiceRole/DefaultPolicy/Resource
+  PhotoIndexServicePhotoAlbumCreateIndex8A39EF15:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: cdk-hnb659fds-assets-756059218166-us-east-1
+        S3Key: f3c8eed25f5df1d90f0e893a6c9fac87718a82005757270198ee4fe539662976.zip
+      Role:
+        Fn::GetAtt:
+          - PhotoIndexServicePhotoAlbumCreateIndexServiceRoleF52D850C
+          - Arn
+      Environment:
+        Variables:
+          OPENSEARCH_HOST:
+            Fn::GetAtt:
+              - PhotoAlbumDataTierPhotoAlbumOpenSearchA1E86EBA
+              - DomainEndpoint
+          OPENSEARCH_INDEX: photo-album-v1
+      Handler: generate_photos_index.lambda_handler
+      Layers:
+        - Ref: PythonLambdaLayerTierPythonLambdaLayerCoreEBDD0798
+      Runtime: python3.9
+      Timeout: 10
+    DependsOn:
+      - PhotoIndexServicePhotoAlbumCreateIndexServiceRoleDefaultPolicyE17E236D
+      - PhotoIndexServicePhotoAlbumCreateIndexServiceRoleF52D850C
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/PhotoIndexService/PhotoAlbumCreateIndex/Resource
+      aws:asset:path: asset.f3c8eed25f5df1d90f0e893a6c9fac87718a82005757270198ee4fe539662976
+      aws:asset:is-bundled: false
+      aws:asset:property: Code
   PhotoIndexServicePhotoAlbumIndexerServiceRole28534A8C:
     Type: AWS::IAM::Role
     Properties:
@@ -261,7 +338,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: cdk-hnb659fds-assets-756059218166-us-east-1
-        S3Key: 716b07c592c849e00b23d9c8d3bcab5765bdabbc0d189afc5b02156bb4610684.zip
+        S3Key: f3c8eed25f5df1d90f0e893a6c9fac87718a82005757270198ee4fe539662976.zip
       Role:
         Fn::GetAtt:
           - PhotoIndexServicePhotoAlbumIndexerServiceRole28534A8C
@@ -274,17 +351,18 @@ Resources:
             Fn::GetAtt:
               - PhotoAlbumDataTierPhotoAlbumOpenSearchA1E86EBA
               - DomainEndpoint
-          OPENSEARCH_INDEX: photo-album
+          OPENSEARCH_INDEX: photo-album-v1
       Handler: index_photos.lambda_handler
       Layers:
         - Ref: PythonLambdaLayerTierPythonLambdaLayerCoreEBDD0798
       Runtime: python3.9
+      Timeout: 10
     DependsOn:
       - PhotoIndexServicePhotoAlbumIndexerServiceRoleDefaultPolicy56EDB5CE
       - PhotoIndexServicePhotoAlbumIndexerServiceRole28534A8C
     Metadata:
       aws:cdk:path: PhotoAlbumStack/PhotoIndexService/PhotoAlbumIndexer/Resource
-      aws:asset:path: asset.716b07c592c849e00b23d9c8d3bcab5765bdabbc0d189afc5b02156bb4610684
+      aws:asset:path: asset.f3c8eed25f5df1d90f0e893a6c9fac87718a82005757270198ee4fe539662976
       aws:asset:is-bundled: false
       aws:asset:property: Code
   PhotoIndexServicePhotoAlbumIndexerInvoke7Tjz5KX7GRQDyjRPBytArERKUwy73V0WhTiHDj2lAwECA071A1:
@@ -511,6 +589,11 @@ Resources:
                         - PhotoAlbumDataTierPhotoAlbumOpenSearchA1E86EBA
                         - Arn
                     - /*
+          - Action: lex:RecognizeText
+            Effect: Allow
+            Resource:
+              - arn:aws:lex:us-east-1:756059218166:bot-alias/UFYUFHDBYO/HE6YVHY5FC
+              - arn:aws:lex:us-east-1:756059218166:bot/UFYUFHDBYO
         Version: "2012-10-17"
       PolicyName: PhotoSearchServicePhotoAlbumSearcherServiceRoleDefaultPolicyA1EC6053
       Roles:
@@ -522,7 +605,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: cdk-hnb659fds-assets-756059218166-us-east-1
-        S3Key: 43d6fd7af164b02d775447f79d92976039889fc9cdbdd2098354fe5f9fa8c838.zip
+        S3Key: d85fd532858b017be1366701a39e9a258873e47411bec8f9b0edd37424c11684.zip
       Role:
         Fn::GetAtt:
           - PhotoSearchServicePhotoAlbumSearcherServiceRoleE180B6BA
@@ -535,97 +618,353 @@ Resources:
             Fn::GetAtt:
               - PhotoAlbumDataTierPhotoAlbumOpenSearchA1E86EBA
               - DomainEndpoint
-          OPENSEARCH_INDEX: photo-album
+          OPENSEARCH_INDEX: photo-album-v1
+          LEX_BOT_ID: UFYUFHDBYO
+          LEX_BOT_ALIAS_ID: HE6YVHY5FC
       Handler: search_photos.lambda_handler
       Layers:
         - Ref: PythonLambdaLayerTierPythonLambdaLayerCoreEBDD0798
       Runtime: python3.9
+      Timeout: 10
     DependsOn:
       - PhotoSearchServicePhotoAlbumSearcherServiceRoleDefaultPolicyA1EC6053
       - PhotoSearchServicePhotoAlbumSearcherServiceRoleE180B6BA
     Metadata:
       aws:cdk:path: PhotoAlbumStack/PhotoSearchService/PhotoAlbumSearcher/Resource
-      aws:asset:path: asset.43d6fd7af164b02d775447f79d92976039889fc9cdbdd2098354fe5f9fa8c838
+      aws:asset:path: asset.d85fd532858b017be1366701a39e9a258873e47411bec8f9b0edd37424c11684
       aws:asset:is-bundled: false
       aws:asset:property: Code
-  PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotDAD9D708:
-    Type: AWS::Lex::Bot
+  APIGatewayRole0A3D51E6:
+    Type: AWS::IAM::Role
     Properties:
-      DataPrivacy:
-        ChildDirected: false
-      IdleSessionTTLInSeconds: 60
-      Name: PhotoSearchServiceLexTemplate
-      RoleArn: roleArn
-      BotLocales:
-        - Description: Photo Album Search Service Locale
-          Intents:
-            - Description: Receive a search query request
-              IntentClosingSetting:
-                ClosingResponse:
-                  MessageGroupsList:
-                    - Message:
-                        PlainTextMessage:
-                          Value: "{SearchQuery}"
-                IsActive: true
-              Name: SearchIntent
-              SampleUtterances:
-                - Utterance: Show me {SearchQuery}
-                - Utterance: Let's see {SearchQuery}
-                - Utterance: Images of {SearchQuery}
-                - Utterance: Pictures of {SearchQuery}
-                - Utterance: I want to see {SearchQuery}
-                - Utterance: "{SearchQuery}"
-              Slots:
-                - MultipleValuesSetting:
-                    AllowMultipleValues: true
-                  Name: SearchQuery
-                  SlotTypeName: AMAZON.SearchQuery
-                  ValueElicitationSetting:
-                    SlotConstraint: Required
-          LocaleId: en_US
-          NluConfidenceThreshold: 0.4
-          VoiceSettings:
-            VoiceId: Ivy
-      Description: Lex Bot for Photo Search Service Query Disambiguation
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+        Version: "2012-10-17"
+      RoleName: APIGatewayPhotoAlbumRole
     Metadata:
-      aws:cdk:path: PhotoAlbumStack/PhotoSearchService/PhotoSearchServiceLex/PhotoSearchServiceLexBot
-  PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotVersionA9B22D33:
-    Type: AWS::Lex::BotVersion
+      aws:cdk:path: PhotoAlbumStack/APIGatewayRole/Resource
+  APIGatewayRoleDefaultPolicyEA6238D4:
+    Type: AWS::IAM::Policy
     Properties:
-      BotId:
-        Fn::GetAtt:
-          - PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotDAD9D708
-          - Id
-      BotVersionLocaleSpecification:
-        - BotVersionLocaleDetails:
-            SourceBotVersion: DRAFT
-          LocaleId: en_US
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:Abort*
+              - s3:PutObject
+              - s3:PutObjectLegalHold
+              - s3:PutObjectRetention
+              - s3:PutObjectTagging
+              - s3:PutObjectVersionTagging
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - Fn::GetAtt:
+                      - PhotoAlbumDataTierPhotoAlbumS3B365F39C
+                      - Arn
+                  - /*
+          - Action: lambda:InvokeFunction
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoSearchServicePhotoAlbumSearcher8B9DCC3A
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoSearchServicePhotoAlbumSearcher8B9DCC3A
+                        - Arn
+                    - :*
+        Version: "2012-10-17"
+      PolicyName: APIGatewayRoleDefaultPolicyEA6238D4
+      Roles:
+        - Ref: APIGatewayRole0A3D51E6
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/APIGatewayRole/DefaultPolicy/Resource
+  photoapi3D985D37:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Description: This service serves photos to clients
+      Name: Photo Album Service
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/photo-api/Resource
+  photoapiDeployment59D5FB13670bf113d3a5bb5d635ae137bc912364:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId:
+        Ref: photoapi3D985D37
+      Description: This service serves photos to clients
     DependsOn:
-      - PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotDAD9D708
+      - photoapiErrorResponseModel545948DF
+      - photoapiOPTIONSCB47188B
+      - photoapisearchGETF64A6F4F
+      - photoapisearch65D059F3
+      - photoapiuploadPOSTD701EAE5
+      - photoapiupload03CA0E22
+      - photoapiPhoto618C9619
+      - photoapiPhotoInfoArrayModel1B44F53E
+      - photoapiPhotoInfoModelE0A6C00B
+      - photoapiPhotoUploadModel6B229A5A
     Metadata:
-      aws:cdk:path: PhotoAlbumStack/PhotoSearchService/PhotoSearchServiceLex/PhotoSearchServiceLexBotVersion
-  PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotAlias92A7AAFC:
-    Type: AWS::Lex::BotAlias
+      aws:cdk:path: PhotoAlbumStack/photo-api/Deployment/Resource
+  photoapiDeploymentStagetestStageFE8E86C2:
+    Type: AWS::ApiGateway::Stage
     Properties:
-      BotAliasName: PhotoSearchServiceLexBotAlias1
-      BotId:
-        Fn::GetAtt:
-          - PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotDAD9D708
-          - Id
-      BotVersion:
-        Fn::GetAtt:
-          - PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotVersionA9B22D33
-          - BotVersion
-    DependsOn:
-      - PhotoSearchServicePhotoSearchServiceLexPhotoSearchServiceLexBotVersionA9B22D33
+      RestApiId:
+        Ref: photoapi3D985D37
+      DeploymentId:
+        Ref: photoapiDeployment59D5FB13670bf113d3a5bb5d635ae137bc912364
+      StageName: testStage
     Metadata:
-      aws:cdk:path: PhotoAlbumStack/PhotoSearchService/PhotoSearchServiceLex/PhotoSearchServiceLexBotAlias
+      aws:cdk:path: PhotoAlbumStack/photo-api/DeploymentStage.testStage/Resource
+  photoapiOPTIONSCB47188B:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: OPTIONS
+      ResourceId:
+        Fn::GetAtt:
+          - photoapi3D985D37
+          - RootResourceId
+      RestApiId:
+        Ref: photoapi3D985D37
+      AuthorizationType: NONE
+      Integration:
+        IntegrationResponses:
+          - ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+            StatusCode: "204"
+        RequestTemplates:
+          application/json: "{ statusCode: 200 }"
+        Type: MOCK
+      MethodResponses:
+        - ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Methods: true
+          StatusCode: "204"
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/photo-api/Default/OPTIONS/Resource
+  photoapisearch65D059F3:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - photoapi3D985D37
+          - RootResourceId
+      PathPart: search
+      RestApiId:
+        Ref: photoapi3D985D37
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/photo-api/Default/search/Resource
+  photoapisearchGETApiPermissionPhotoAlbumStackphotoapiF7003816GETsearch2B74AFDF:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - PhotoSearchServicePhotoAlbumSearcher8B9DCC3A
+          - Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Join:
+          - ""
+          - - "arn:aws:execute-api:us-east-1:756059218166:"
+            - Ref: photoapi3D985D37
+            - /
+            - Ref: photoapiDeploymentStagetestStageFE8E86C2
+            - /GET/search
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/photo-api/Default/search/GET/ApiPermission.PhotoAlbumStackphotoapiF7003816.GET..search
+  photoapisearchGETApiPermissionTestPhotoAlbumStackphotoapiF7003816GETsearchD3AC0506:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - PhotoSearchServicePhotoAlbumSearcher8B9DCC3A
+          - Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        Fn::Join:
+          - ""
+          - - "arn:aws:execute-api:us-east-1:756059218166:"
+            - Ref: photoapi3D985D37
+            - /test-invoke-stage/GET/search
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/photo-api/Default/search/GET/ApiPermission.Test.PhotoAlbumStackphotoapiF7003816.GET..search
+  photoapisearchGETF64A6F4F:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      ResourceId:
+        Ref: photoapisearch65D059F3
+      RestApiId:
+        Ref: photoapi3D985D37
+      AuthorizationType: NONE
+      Integration:
+        Credentials:
+          Fn::GetAtt:
+            - APIGatewayRole0A3D51E6
+            - Arn
+        IntegrationHttpMethod: POST
+        RequestTemplates:
+          application/json: '{ "statusCode": "200" }'
+        Type: AWS_PROXY
+        Uri:
+          Fn::Join:
+            - ""
+            - - arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/
+              - Fn::GetAtt:
+                  - PhotoSearchServicePhotoAlbumSearcher8B9DCC3A
+                  - Arn
+              - /invocations
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/photo-api/Default/search/GET/Resource
+  photoapiupload03CA0E22:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - photoapi3D985D37
+          - RootResourceId
+      PathPart: upload
+      RestApiId:
+        Ref: photoapi3D985D37
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/photo-api/Default/upload/Resource
+  photoapiuploadPOSTD701EAE5:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: POST
+      ResourceId:
+        Ref: photoapiupload03CA0E22
+      RestApiId:
+        Ref: photoapi3D985D37
+      AuthorizationType: NONE
+      Integration:
+        Credentials:
+          Fn::GetAtt:
+            - APIGatewayRole0A3D51E6
+            - Arn
+        IntegrationHttpMethod: POST
+        Type: AWS
+        Uri: arn:aws:apigateway:us-east-1:s3:path/{bucket}/{key}
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/photo-api/Default/upload/POST/Resource
+  photoapiPhoto618C9619:
+    Type: AWS::ApiGateway::Model
+    Properties:
+      RestApiId:
+        Ref: photoapi3D985D37
+      ContentType: image/*
+      Name: Photo
+      Schema:
+        format: binary
+        type: string
+        $schema: http://json-schema.org/draft-04/schema#
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/photo-api/Photo/Resource
+  photoapiPhotoInfoModelE0A6C00B:
+    Type: AWS::ApiGateway::Model
+    Properties:
+      RestApiId:
+        Ref: photoapi3D985D37
+      ContentType: application/json
+      Name: PhotoInfoModel
+      Schema:
+        properties:
+          url:
+            type: string
+          labels:
+            items:
+              type: string
+            type: array
+        $schema: http://json-schema.org/draft-04/schema#
+        title: photoInfo
+        type: object
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/photo-api/PhotoInfoModel/Resource
+  photoapiPhotoUploadModel6B229A5A:
+    Type: AWS::ApiGateway::Model
+    Properties:
+      RestApiId:
+        Ref: photoapi3D985D37
+      ContentType: multipart/form-data
+      Name: PhotoUploadModel
+      Schema:
+        properties:
+          photoInfo:
+            $ref:
+              Ref:
+                Ref: photoapiPhotoInfoModelE0A6C00B
+          photo:
+            $ref:
+              Ref:
+                Ref: photoapiPhoto618C9619
+        $schema: http://json-schema.org/draft-04/schema#
+        title: photoUpload
+        type: object
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/photo-api/PhotoUploadModel/Resource
+  photoapiPhotoInfoArrayModel1B44F53E:
+    Type: AWS::ApiGateway::Model
+    Properties:
+      RestApiId:
+        Ref: photoapi3D985D37
+      ContentType: application/json
+      Name: PhotoInfoArrayModel
+      Schema:
+        items:
+          $ref:
+            Ref:
+              Ref: photoapiPhotoInfoModelE0A6C00B
+        $schema: http://json-schema.org/draft-04/schema#
+        title: photoArrayInfo
+        type: array
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/photo-api/PhotoInfoArrayModel/Resource
+  photoapiErrorResponseModel545948DF:
+    Type: AWS::ApiGateway::Model
+    Properties:
+      RestApiId:
+        Ref: photoapi3D985D37
+      ContentType: application/json
+      Name: ErrorResponseModel
+      Schema:
+        properties:
+          state:
+            type: string
+          message:
+            type: string
+        $schema: http://json-schema.org/draft-04/schema#
+        title: errorResponse
+        type: object
+    Metadata:
+      aws:cdk:path: PhotoAlbumStack/photo-api/--ErrorResponseModel/Resource
   CDKMetadata:
     Type: AWS::CDK::Metadata
     Properties:
-      Analytics: v2:deflate64:H4sIAAAAAAAA/12QwU7DMBBEv6V3ZylUiHNbxIlDFCSuless7RLbi7xOIbL87yRxS4HTvBnLs2vfwf0Slgv9KZVpu8rSHtJL1KZTY7RLVrt9qyE96wHDKwYh9mr75v/7GoMjmd1T7008xxfOSlY7LYJRYD3J6CFtetNh3GhBVXC6cqYiNVsywzUuPiv+QC+ogzkKhhMZhPTITtM8tFBWpB2khi1O4azXukuRxS9IUz2X4Rx/PWp0a0taclbz0uO/HMgf1LaXyK5B4T6Y0v7Df47qwCdqMWRVD/HI/mYFt0t4WLwLURV6H8khNEW/AYFkQW6JAQAA
+      Analytics: v2:deflate64:H4sIAAAAAAAA/22QT0/DMAzFP8vuaShMiPP+aCcmqiFxnbzUbGZNUsXJpqrqd6dJOg0QJ/+e/fKc5Ek+l7KcwZULVZ+Lhg6yf/egzmJs7fsG9KEG2b9Ch+4DHZM1YvVp/uoKnSZOahOM8lP7xoPg+R6Y0bNcxDJq2S+DOqNfAqPIGI9MlEtlG1LdvZ31IGyLhhGcOjG6CymU/dpqoLQ00yAItOx3tsHYTPUedwuClo7g8QrdaEX2i5aSe8I1to3tNJp0tR9q/KJjys0w+m1wCtNbtuhPto7DiW7TKTnz1tbYJFOEYRDpX2IcmaNYBfZW/3vw96hy9kI1umh5C74NfhBVN641D3P5WMqX2RcTFS4YTxrlLtdvFwipoPYBAAA=
     Metadata:
       aws:cdk:path: PhotoAlbumStack/CDKMetadata/Default
+Outputs:
+  photoapiEndpointC8589D95:
+    Value:
+      Fn::Join:
+        - ""
+        - - https://
+          - Ref: photoapi3D985D37
+          - .execute-api.us-east-1.
+          - Ref: AWS::URLSuffix
+          - /
+          - Ref: photoapiDeploymentStagetestStageFE8E86C2
+          - /
 Parameters:
   BootstrapVersion:
     Type: AWS::SSM::Parameter::Value<String>

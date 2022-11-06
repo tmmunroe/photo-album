@@ -61,15 +61,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-      x-amazon-apigateway-integration:
-        credentials: "arn:aws:iam::756059218166:role/api-gateway-access-to-s3"
-        httpMethod: "POST"
-        uri: "arn:aws:apigateway:us-east-1:s3:path/{bucket}/{key}"
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_match"
-        type: "aws"
 components:
   requestBodies:
     PhotoUpload:
