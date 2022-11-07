@@ -14,6 +14,5 @@ class PhotoAlbumFrontendStack(cdk.Stack):
             auto_delete_objects=True,
             website_index_document='index.html',
             website_error_document='index.html',
-            block_public_access=False,
             public_read_access=True,
         )
