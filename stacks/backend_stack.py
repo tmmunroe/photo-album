@@ -54,13 +54,20 @@ class PhotoAlbumStack(cdk.Stack):
                 #     status_code=200
                 #     )
                 )
-        api.add_api_key('PhotoAlbumAPIKey')
         options_method = api.root.add_cors_preflight(
             allow_origins=apigateway.Cors.ALL_ORIGINS,
             allow_headers=apigateway.Cors.DEFAULT_HEADERS,
             allow_methods=apigateway.Cors.ALL_METHODS,
             status_code=200
         )
+
+        usage_plan = api.add_usage_plan('PhotoAlbumAPIUsagePlan', 
+            api_stages=[
+                apigateway.UsagePlanPerApiStage(stage=api.deployment_stage)
+            ]
+        )
+        api_key = api.add_api_key('PhotoAlbumAPIKey')
+        usage_plan.add_api_key(api_key)
         
         photoModel = api.add_model(
             'PhotoModel',
@@ -115,12 +122,19 @@ class PhotoAlbumStack(cdk.Stack):
           credentials_role=api_role
         )
         search_resource = api.root.add_resource('search')
+        search_resource.add_cors_preflight(
+            allow_origins=apigateway.Cors.ALL_ORIGINS,
+            allow_headers=apigateway.Cors.DEFAULT_HEADERS,
+            allow_methods=apigateway.Cors.ALL_METHODS,
+            status_code=200
+        )
         search_resource.add_method('GET', 
             integration=search_integration,
-            # api_key_required=True,
+            api_key_required=True,
             operation_name='searchPhotos',
             request_parameters= {
                 'method.request.querystring.q': True,
+                'method.request.header.x-api-key': True,
             },
             method_responses=[
                 apigateway.MethodResponse(status_code='200', 
@@ -157,6 +171,12 @@ class PhotoAlbumStack(cdk.Stack):
             options=s3_integration_options
         )
         photo_resource = api.root.add_resource('photos')
+        photo_resource.add_cors_preflight(
+            allow_origins=apigateway.Cors.ALL_ORIGINS,
+            allow_headers=apigateway.Cors.DEFAULT_HEADERS,
+            allow_methods=apigateway.Cors.ALL_METHODS,
+            status_code=200
+        )
         photo_resource.add_method('PUT',
             integration=photos_integration,
             api_key_required=True,
