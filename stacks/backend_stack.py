@@ -47,28 +47,22 @@ class PhotoAlbumStack(cdk.Stack):
                 deploy=True,
                 deploy_options=apigateway.StageOptions(stage_name='testStage'),
                 binary_media_types=["image/jpeg", "image/jpg", "image/png"],
-                # default_cors_preflight_options=apigateway.CorsOptions(
-                #     allow_origins=apigateway.Cors.ALL_ORIGINS,
-                #     allow_headers=apigateway.Cors.DEFAULT_HEADERS,
-                #     allow_methods=apigateway.Cors.ALL_METHODS,
-                #     status_code=200
-                #     )
+                default_cors_preflight_options=apigateway.CorsOptions(
+                    allow_origins=apigateway.Cors.ALL_ORIGINS,
+                    allow_headers=apigateway.Cors.DEFAULT_HEADERS,
+                    allow_methods=apigateway.Cors.ALL_METHODS,
+                    status_code=200
+                    )
                 )
-        options_method = api.root.add_cors_preflight(
-            allow_origins=apigateway.Cors.ALL_ORIGINS,
-            allow_headers=apigateway.Cors.DEFAULT_HEADERS,
-            allow_methods=apigateway.Cors.ALL_METHODS,
-            status_code=200
-        )
 
+        # api key and usage plans
         usage_plan = api.add_usage_plan('PhotoAlbumAPIUsagePlan', 
-            api_stages=[
-                apigateway.UsagePlanPerApiStage(stage=api.deployment_stage)
-            ]
+            api_stages=[apigateway.UsagePlanPerApiStage(stage=api.deployment_stage)]
         )
         api_key = api.add_api_key('PhotoAlbumAPIKey')
         usage_plan.add_api_key(api_key)
         
+        # models
         photoModel = api.add_model(
             'PhotoModel',
             content_type='image/*',
@@ -122,19 +116,12 @@ class PhotoAlbumStack(cdk.Stack):
           credentials_role=api_role
         )
         search_resource = api.root.add_resource('search')
-        search_resource.add_cors_preflight(
-            allow_origins=apigateway.Cors.ALL_ORIGINS,
-            allow_headers=apigateway.Cors.DEFAULT_HEADERS,
-            allow_methods=apigateway.Cors.ALL_METHODS,
-            status_code=200
-        )
         search_resource.add_method('GET', 
             integration=search_integration,
             api_key_required=True,
             operation_name='searchPhotos',
             request_parameters= {
                 'method.request.querystring.q': True,
-                'method.request.header.x-api-key': True,
             },
             method_responses=[
                 apigateway.MethodResponse(status_code='200', 
@@ -171,12 +158,6 @@ class PhotoAlbumStack(cdk.Stack):
             options=s3_integration_options
         )
         photo_resource = api.root.add_resource('photos')
-        photo_resource.add_cors_preflight(
-            allow_origins=apigateway.Cors.ALL_ORIGINS,
-            allow_headers=apigateway.Cors.DEFAULT_HEADERS,
-            allow_methods=apigateway.Cors.ALL_METHODS,
-            status_code=200
-        )
         photo_resource.add_method('PUT',
             integration=photos_integration,
             api_key_required=True,
@@ -199,10 +180,3 @@ class PhotoAlbumStack(cdk.Stack):
                     response_models={'application/json': error_model}),
             ]
         )
-
-
-        
-        # # expose_headers = 'Set-Cookie,Cookie'.split(',')
-        # # allow_headers = 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Cookie,Set-Cookie,Origin'.split(',')
-        # # api.root.add_cors_preflight(allow_credentials=True, allow_origins='[*]', 
-        # #     allow_headers=allow_headers, expose_headers=expose_headers)
