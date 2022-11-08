@@ -119,14 +119,17 @@ def lambda_handler(event, context):
 
     search_response = perform_search(query)
 
-    return {
+    response = {
         "isBase64Encoded": True,
         "statusCode": 200,
         "headers": {
-            "Access-Control-Allow-Origin": "'*'",
+            "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Credentials": True,
             "Access-Control-Allow-Methods": "OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD",
             "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Origin",
         },
         "body": json.dumps(search_response.format_response())
     }
+    print('Response: ', response)
+
+    return response

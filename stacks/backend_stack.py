@@ -46,17 +46,22 @@ class PhotoAlbumStack(cdk.Stack):
                 description='This service serves photos to clients',
                 deploy=True,
                 deploy_options=apigateway.StageOptions(stage_name='testStage'),
-                binary_media_types=["image/jpeg", "image/jpg", "image/png"]
+                binary_media_types=["image/jpeg", "image/jpg", "image/png"],
+                # default_cors_preflight_options=apigateway.CorsOptions(
+                #     allow_origins=apigateway.Cors.ALL_ORIGINS,
+                #     allow_headers=apigateway.Cors.DEFAULT_HEADERS,
+                #     allow_methods=apigateway.Cors.ALL_METHODS,
+                #     status_code=200
+                #     )
                 )
         api.add_api_key('PhotoAlbumAPIKey')
-
         options_method = api.root.add_cors_preflight(
             allow_origins=apigateway.Cors.ALL_ORIGINS,
             allow_headers=apigateway.Cors.DEFAULT_HEADERS,
             allow_methods=apigateway.Cors.ALL_METHODS,
             status_code=200
         )
-
+        
         photoModel = api.add_model(
             'PhotoModel',
             content_type='image/*',
@@ -112,7 +117,7 @@ class PhotoAlbumStack(cdk.Stack):
         search_resource = api.root.add_resource('search')
         search_resource.add_method('GET', 
             integration=search_integration,
-            api_key_required=True,
+            # api_key_required=True,
             operation_name='searchPhotos',
             request_parameters= {
                 'method.request.querystring.q': True,
