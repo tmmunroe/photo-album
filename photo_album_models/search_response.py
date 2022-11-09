@@ -1,13 +1,13 @@
-from photo_album_models.photo_info import PhotoInfoModel
+from photo_album_models.photo import PhotoModel
 
 class SearchResponseModel:
-    def __init__(self, photo_infos=None):
-        self._photo_infos = photo_infos if photo_infos else []
+    def __init__(self, photos=None):
+        self._photos = photos if photos else []
     
-    def add_photo_info(self, photo_info: PhotoInfoModel):
-        self._photo_infos.append(photo_info)
+    def add_photo(self, photo: PhotoModel):
+        self._photos.append(photo)
 
     def format_response(self):
         return {
-            "results": [ info.format_response() for info in self._photo_infos ]
+            "results": [ photo.format_response() for photo in self._photos ]
         }

@@ -66,7 +66,7 @@ class PhotoAlbumStack(cdk.Stack):
         usage_plan.add_api_key(api_key)
         
         # models
-        photoModel = api.add_model(
+        photo_model = api.add_model(
             'PhotoModel',
             content_type='image/*',
             model_name='PhotoModel',
@@ -147,13 +147,14 @@ class PhotoAlbumStack(cdk.Stack):
             },
             method_responses=[
                 apigateway.MethodResponse(status_code='200', 
-                    response_models={'application/json': photo_info_model}),
+                    response_models={'application/json': photo_model}),
                 apigateway.MethodResponse(status_code='403', 
                     response_models={'application/json': error_model}),
                 apigateway.MethodResponse(status_code='500', 
                     response_models={'application/json': error_model}),
             ]
         )
+
 
         # photos integration for s3
         s3_integration_options = apigateway.IntegrationOptions(
@@ -194,9 +195,9 @@ class PhotoAlbumStack(cdk.Stack):
                 'method.request.header.Content-Type': False,
             },
             request_models={
-                'image/jpeg': photoModel,
-                'image/png': photoModel,
-                'image/jpg': photoModel,
+                'image/jpeg': photo_model,
+                'image/png': photo_model,
+                'image/jpg': photo_model,
             },
             method_responses=[
                 apigateway.MethodResponse(status_code='200',

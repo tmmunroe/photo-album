@@ -1,3 +1,4 @@
+import base64
 import boto3
 import datetime
 import json
@@ -8,7 +9,7 @@ import uuid
 from botocore.exceptions import ClientError
 from opensearchpy import OpenSearch, RequestsHttpConnection
 from photo_album_models.open_search_index import OpenSearchIndexModel
-from photo_album_models.photo_info import PhotoInfoModel
+from photo_album_models.photo import PhotoModel
 from photo_album_models.search_response import SearchResponseModel
 from requests_aws4auth import AWS4Auth
 
@@ -97,10 +98,14 @@ def perform_search(query) -> SearchResponseModel:
     results = search_opensearch(labels)
     print(f"Results: {results}")
     for result in results:
-        photo_url = f'https://{result.bucket}.s3.amazonaws.com/{result.objectKey}'
-        response.add_photo_info(
-            PhotoInfoModel(photo_url, result.labels)
-        )
+        s3_response = s3.get_object(Bucket=result.bucket, Key=result.objectKey)
+        print(s3_response)
+        streaming_body, content_type = s3_response['Body'], s3_response['ContentType']
+        body = base64.encodebytes(streaming_body.read()).decode('utf-8')
+        print(f'Body: {body}')
+        print(f'ContentType: {content_type}')
+
+        response.add_photo(PhotoModel(body))
 
     return response
 
