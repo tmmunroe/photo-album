@@ -41,18 +41,21 @@ class PhotoAlbumStack(cdk.Stack):
         search_service.lambda_search.grant_invoke(api_role)
 
         # set up api
+        custom_allow_headers = ['object-key', 'x-amz-meta-customLabels']
+        corsOptions = apigateway.CorsOptions(
+                allow_origins=apigateway.Cors.ALL_ORIGINS,
+                allow_headers=apigateway.Cors.DEFAULT_HEADERS + custom_allow_headers,
+                allow_methods=apigateway.Cors.ALL_METHODS,
+                status_code=200
+            )
+
         api = apigateway.RestApi(self, 'photo-api',
                 rest_api_name='Photo Album Service',
                 description='This service serves photos to clients',
                 deploy=True,
                 deploy_options=apigateway.StageOptions(stage_name='testStage'),
                 binary_media_types=["image/jpeg", "image/jpg", "image/png"],
-                default_cors_preflight_options=apigateway.CorsOptions(
-                    allow_origins=apigateway.Cors.ALL_ORIGINS,
-                    allow_headers=apigateway.Cors.DEFAULT_HEADERS,
-                    allow_methods=apigateway.Cors.ALL_METHODS,
-                    status_code=200
-                    )
+                default_cors_preflight_options=corsOptions
                 )
 
         # api key and usage plans
@@ -110,6 +113,25 @@ class PhotoAlbumStack(cdk.Stack):
             )
         )
 
+        # standard cors headers for responses
+        integration_response_params = dict()
+        method_response_params = dict()
+
+        if corsOptions.allow_headers:
+            allow_headers = ','.join(corsOptions.allow_headers)
+            integration_response_params['method.response.header.Access-Control-Allow-Headers'] = f"'{allow_headers}'"
+            method_response_params['method.response.header.Access-Control-Allow-Headers'] = True
+
+        if corsOptions.allow_methods:
+            allow_methods = ','.join(corsOptions.allow_methods)
+            integration_response_params['method.response.header.Access-Control-Allow-Methods'] = f"'{allow_methods}'"
+            method_response_params['method.response.header.Access-Control-Allow-Methods'] = True
+
+        if corsOptions.allow_origins:
+            allow_origin = corsOptions.allow_origins[0]
+            integration_response_params['method.response.header.Access-Control-Allow-Origin'] = f"'{allow_origin}'"
+            method_response_params['method.response.header.Access-Control-Allow-Origin'] = True
+        
         # search integration for lambda search handler
         search_integration = apigateway.LambdaIntegration(
           search_service.lambda_search,
@@ -139,18 +161,22 @@ class PhotoAlbumStack(cdk.Stack):
             content_handling=apigateway.ContentHandling.CONVERT_TO_BINARY,
             passthrough_behavior=apigateway.PassthroughBehavior.WHEN_NO_MATCH,
             integration_responses=[
-                apigateway.IntegrationResponse(status_code='200'),
-                apigateway.IntegrationResponse(status_code='403'),
-                apigateway.IntegrationResponse(status_code='500')
+                apigateway.IntegrationResponse(status_code='200',
+                    response_parameters=integration_response_params),
+                apigateway.IntegrationResponse(status_code='403',
+                    response_parameters=integration_response_params),
+                apigateway.IntegrationResponse(status_code='500',
+                    response_parameters=integration_response_params)
             ],
             request_parameters={
                 'integration.request.header.x-amz-meta-customLabels':
                     'method.request.header.x-amz-meta-customLabels',
                 'integration.request.path.bucket': f"'{bucket.bucket_name}'",
-                'integration.request.path.key': 'method.request.header.imageName',
+                'integration.request.path.key': 'method.request.header.object-key',
                 'integration.request.header.Content-Type': 'method.request.header.Content-Type',
             }
         )
+
         photos_integration = apigateway.AwsIntegration(
             service='s3',
             path='{bucket}/{key}',
@@ -164,7 +190,7 @@ class PhotoAlbumStack(cdk.Stack):
             operation_name='putPhoto',
             request_parameters={
                 'method.request.header.x-amz-meta-customLabels': False,
-                'method.request.header.imageName': True,
+                'method.request.header.object-key': True,
                 'method.request.header.Content-Type': False,
             },
             request_models={
@@ -173,10 +199,13 @@ class PhotoAlbumStack(cdk.Stack):
                 'image/jpg': photoModel,
             },
             method_responses=[
-                apigateway.MethodResponse(status_code='200'),
-                apigateway.MethodResponse(status_code='403', 
+                apigateway.MethodResponse(status_code='200',
+                    response_parameters=method_response_params),
+                apigateway.MethodResponse(status_code='403',
+                    response_parameters=method_response_params, 
                     response_models={'application/json': error_model}),
-                apigateway.MethodResponse(status_code='500', 
+                apigateway.MethodResponse(status_code='500',
+                    response_parameters=method_response_params, 
                     response_models={'application/json': error_model}),
             ]
         )

@@ -1,4 +1,4 @@
-imageName:cat.jpg
+object-key:cat.jpg
 x-amz-meta-customLabels:'cat,grass'
 Content-Type:'image/jpg'
 
