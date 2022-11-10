@@ -33,7 +33,7 @@ class PhotoAlbumDeploymentStack(cdk.Stack):
                     pipeline_name="PhotoAlbumCDKPipeline",
                     code_build_defaults=pipelines.CodeBuildOptions(
                         build_environment=codebuild.BuildEnvironment(
-                            build_image=codebuild.LinuxBuildImage.STANDARD_6_0
+                            build_image=codebuild.LinuxBuildImage.STANDARD_5_0
                         )
                     ),
                     synth=pipelines.ShellStep("Synth", 
@@ -41,6 +41,7 @@ class PhotoAlbumDeploymentStack(cdk.Stack):
                         commands=[
                             # install basic environment components
                             "npm install -g aws-cdk",
+                            "python --version",
                             "pip install -r requirements.txt",
 
                             # set up lambda layer
