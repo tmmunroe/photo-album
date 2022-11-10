@@ -11,6 +11,7 @@ app = cdk.App()
 
 # PhotoAlbumStack(app, "PhotoAlbumStack", env=env)
 # PhotoAlbumFrontendStack(app, "PhotoAlbumFrontendStack", env=env)
+
 PhotoAlbumDeploymentStack(app, "PhotoAlbumDeploymentStack", env=env)
 
 app.synth()
