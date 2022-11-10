@@ -123,6 +123,7 @@ def lambda_handler(event, context):
         }
 
     search_response = perform_search(query)
+    print("Search response: ", search_response)
 
     response = {
         "isBase64Encoded": True,
