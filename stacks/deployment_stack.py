@@ -33,10 +33,10 @@ class PhotoAlbumDeploymentStack(cdk.Stack):
                         commands=[
                             # install basic environment components
                             "npm install -g aws-cdk",
-                            "python -m pip install -r requirements.txt",
+                            "pip install -r requirements.txt",
 
                             # set up lambda layer
-                            "python -m pip install --upgrade -t layer/python -r requirements-lambda.txt",
+                            "pip install --upgrade -t layer/python -r requirements-lambda.txt",
                             "cp -r photo_album_models layer/python",
 
                             # synth
