@@ -1,5 +1,8 @@
 import aws_cdk as cdk
-from aws_cdk import pipelines
+from aws_cdk import (
+    pipelines,
+    aws_codebuild as codebuild
+)
 from constructs import Construct
 
 from stacks.backend_stack import PhotoAlbumStack
@@ -28,6 +31,11 @@ class PhotoAlbumDeploymentStack(cdk.Stack):
         # cdk pipeline
         pipeline = pipelines.CodePipeline(self, "PhotoAlbumCDKPipeline", 
                     pipeline_name="PhotoAlbumCDKPipeline",
+                    code_build_defaults=pipelines.CodeBuildOptions(
+                        build_environment=codebuild.BuildEnvironment(
+                            build_image=codebuild.LinuxBuildImage.STANDARD_6_0
+                        )
+                    ),
                     synth=pipelines.ShellStep("Synth", 
                         input=repo_source,
                         commands=[
