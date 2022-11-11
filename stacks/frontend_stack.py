@@ -9,7 +9,7 @@ class PhotoAlbumFrontendStack(cdk.Stack):
         super().__init__(scope, construct_id, **kwargs)
         
         bucket = s3.Bucket(self, "PhotoAlbumFrontend",
-            bucket_name="photo-album-tmm2169",
+            bucket_name="photo-album-tmm2169.com",
             versioned=True,
             removal_policy=cdk.RemovalPolicy.DESTROY,
             auto_delete_objects=True,
@@ -21,5 +21,5 @@ class PhotoAlbumFrontendStack(cdk.Stack):
                 block_public_policy=False,
                 ignore_public_acls=False,
                 restrict_public_buckets=False
-            )
+            ),
         )
