@@ -47,6 +47,9 @@ class PhotoAlbumFrontendDeploymentStack(cdk.Stack):
                     outputs=[build_artifact],
                     project=codebuild.PipelineProject(
                         self, "PhotoAlbumFrontendProject",
+                        environment=codebuild.BuildEnvironment(
+                            build_image=codebuild.LinuxBuildImage.STANDARD_5_0 # Ubuntu 20
+                        ),
                         build_spec=codebuild.BuildSpec.from_source_filename('buildspec.yml')
                     )
                 ),
