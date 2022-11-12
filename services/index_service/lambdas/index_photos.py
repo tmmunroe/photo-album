@@ -64,6 +64,8 @@ def get_labels(bucket, key):
         response = s3.head_object(Bucket=bucket, Key=key)
         print(f'S3: {response}')
         custom_labels = response['Metadata'].get('customlabels', list())
+        if isinstance(custom_labels, str):
+            custom_labels = [custom_labels]
         print(f'Custom Labels: {custom_labels}')
         
         labels.extend(rekognition_labels + custom_labels)
