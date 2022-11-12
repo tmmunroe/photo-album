@@ -38,7 +38,7 @@ def post_to_opensearch(labeled_bucket_info):
 
     response = search.index(index=index, body=labeled_bucket_info)
     
-    print(f"OpenSearch response: {response}")
+    print(f"OpenSearch response: " + json.dumps(response))
     return response
 
 
@@ -56,14 +56,14 @@ def get_labels(bucket, key):
             MaxLabels=max_labels,
             MinConfidence=min_confidence
         )
-        print(f'Rekognition: {response}')
+        print(f'Rekognition: ' + json.dumps(response))
         rekognition_labels = [label['Name'] for label in response['Labels']]
         print(f'Rekognition Labels: {rekognition_labels}')
 
         # get s3 custom labels
         response = s3.head_object(Bucket=bucket, Key=key)
-        print(f'S3: {response}')
-        custom_labels = response['Metadata'].get('x-amz-meta-customLabels', list())
+        print(f'S3: ' + json.dumps(response))
+        custom_labels = response['Metadata'].get('customlabels', list())
         print(f'Custom Labels: {custom_labels}')
         
         labels.extend(rekognition_labels + custom_labels)

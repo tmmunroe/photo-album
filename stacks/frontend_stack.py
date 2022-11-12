@@ -8,7 +8,7 @@ class PhotoAlbumFrontendStack(cdk.Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
         
-        bucket = s3.Bucket(self, "PhotoAlbumFrontend",
+        self.hosting_bucket = s3.Bucket(self, "PhotoAlbumFrontend",
             bucket_name="photo-album-tmm2169.com",
             versioned=True,
             removal_policy=cdk.RemovalPolicy.DESTROY,

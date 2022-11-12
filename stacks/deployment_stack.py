@@ -7,14 +7,19 @@ from constructs import Construct
 
 from stacks.backend_stack import PhotoAlbumStack
 from stacks.frontend_stack import PhotoAlbumFrontendStack
-
+from stacks.frontend_deployment_stack import PhotoAlbumFrontendDeploymentStack
 
 class PhotoAlbumDeploymentStage(cdk.Stage):
     def __init__(self, scope, id, *, env=None, outdir=None, stage_name=None):
         super().__init__(scope, id, env=env, outdir=outdir, stage_name=stage_name)
 
+        # backend stack
         PhotoAlbumStack(self, "PhotoAlbumStack", env=env)
-        PhotoAlbumFrontendStack(self, "PhotoAlbumFrontendStack", env=env)
+        
+        # frontend stack + separate frontend deployment stack/pipeline 
+        frontend_stack = PhotoAlbumFrontendStack(self, "PhotoAlbumFrontendStack", env=env)
+        PhotoAlbumFrontendDeploymentStack(self, "PhotoAlbumFrontendDeploymentStack", env=env,
+            frontend_bucket=frontend_stack.hosting_bucket)
 
 
 class PhotoAlbumDeploymentStack(cdk.Stack):
@@ -53,7 +58,6 @@ class PhotoAlbumDeploymentStack(cdk.Stack):
                         ]
                     )
                 )
-
         
         env = cdk.Environment(account='756059218166', region='us-east-1')
         pipeline.add_stage(PhotoAlbumDeploymentStage(self, "DeploymentStage", env=env))
