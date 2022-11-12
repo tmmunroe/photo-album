@@ -67,6 +67,8 @@ def search_opensearch(search_terms):
 
 
 def labels_from_text(query):
+    labels = []
+
     bot_id = os.getenv("LEX_BOT_ID")
     alias_id = os.getenv("LEX_BOT_ALIAS_ID")
     
@@ -79,8 +81,12 @@ def labels_from_text(query):
     
     print(f"Lex Response: ", response)
 
-    values = response["sessionState"]["intent"]["slots"]["SearchQuery"]["values"]
-    labels = [ value["value"]["interpretedValue"] for value in values ]
+    first = response["sessionState"]["intent"]["slots"]["SearchQuery1"]
+    second = response["sessionState"]["intent"]["slots"]["SearchQuery2"]
+
+    labels.append(first['value']['interpretedValue']) # first has to be there
+    if second:
+        labels.append(second['value']['interpretedValue'])
 
     return labels
 
