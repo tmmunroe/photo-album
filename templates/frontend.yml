@@ -1,0 +1,156 @@
+Resources:
+  PhotoAlbumFrontendCB0CB3E9:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: photo-album-tmm2169.com
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      Tags:
+        - Key: aws-cdk:auto-delete-objects
+          Value: "true"
+      VersioningConfiguration:
+        Status: Enabled
+      WebsiteConfiguration:
+        ErrorDocument: index.html
+        IndexDocument: index.html
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendStack/PhotoAlbumFrontend/Resource
+  PhotoAlbumFrontendPolicy29F53FCC:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: PhotoAlbumFrontendCB0CB3E9
+      PolicyDocument:
+        Statement:
+          - Action: s3:GetObject
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Resource:
+              Fn::Join:
+                - ""
+                - - Fn::GetAtt:
+                      - PhotoAlbumFrontendCB0CB3E9
+                      - Arn
+                  - /*
+          - Action:
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:List*
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::GetAtt:
+                  - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+                  - Arn
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumFrontendCB0CB3E9
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumFrontendCB0CB3E9
+                        - Arn
+                    - /*
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendStack/PhotoAlbumFrontend/Policy/Resource
+  PhotoAlbumFrontendAutoDeleteObjectsCustomResourceCB001468:
+    Type: Custom::S3AutoDeleteObjects
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F
+          - Arn
+      BucketName:
+        Ref: PhotoAlbumFrontendCB0CB3E9
+    DependsOn:
+      - PhotoAlbumFrontendPolicy29F53FCC
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendStack/PhotoAlbumFrontend/AutoDeleteObjectsCustomResource/Default
+  CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      ManagedPolicyArns:
+        - Fn::Sub: arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role
+  CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: cdk-hnb659fds-assets-756059218166-us-east-1
+        S3Key: 3f51abb709b8e65167a45aeed02bab11540603d909005d7148230ba5ce6c74d7.zip
+      Timeout: 900
+      MemorySize: 128
+      Handler: __entrypoint__.handler
+      Role:
+        Fn::GetAtt:
+          - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+          - Arn
+      Runtime: nodejs14.x
+      Description:
+        Fn::Join:
+          - ""
+          - - "Lambda function for auto-deleting objects in "
+            - Ref: PhotoAlbumFrontendCB0CB3E9
+            - " S3 bucket."
+    DependsOn:
+      - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler
+      aws:asset:path: ../asset.3f51abb709b8e65167a45aeed02bab11540603d909005d7148230ba5ce6c74d7
+      aws:asset:property: Code
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/1WNQQ6CMBBFz8K+HavEuFYu0MABDJaKY6FNOlMNIdxdTE2Iq/f/f4t/gKMCVbRvkqZzcsAbzA23xol1ulIJ8yUZZ1lUd/9LGToMaKZtzn0RVSIOY20ppGjs12/5T+kYXtjZKM5EltfPHn2/CD3xI/hdCXsFp+JJiDImzzhaqDM/Zl/MBrMAAAA=
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendStack/CDKMetadata/Default
+Outputs:
+  ExportsOutputRefPhotoAlbumFrontendCB0CB3E9779B6EE0:
+    Value:
+      Ref: PhotoAlbumFrontendCB0CB3E9
+    Export:
+      Name: DeploymentStage-PhotoAlbumFrontendStack:ExportsOutputRefPhotoAlbumFrontendCB0CB3E9779B6EE0
+  ExportsOutputFnGetAttPhotoAlbumFrontendCB0CB3E9Arn0335F79D:
+    Value:
+      Fn::GetAtt:
+        - PhotoAlbumFrontendCB0CB3E9
+        - Arn
+    Export:
+      Name: DeploymentStage-PhotoAlbumFrontendStack:ExportsOutputFnGetAttPhotoAlbumFrontendCB0CB3E9Arn0335F79D
+Parameters:
+  BootstrapVersion:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cdk-bootstrap/hnb659fds/version
+    Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
+Rules:
+  CheckBootstrapVersion:
+    Assertions:
+      - Assert:
+          Fn::Not:
+            - Fn::Contains:
+                - - "1"
+                  - "2"
+                  - "3"
+                  - "4"
+                  - "5"
+                - Ref: BootstrapVersion
+        AssertDescription: CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.
+

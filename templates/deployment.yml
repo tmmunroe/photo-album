@@ -894,7 +894,7 @@ Resources:
               },
               "build": {
                 "commands": [
-                  "cdk-assets --path \"assembly-PhotoAlbumDeploymentStack-DeploymentStage/PhotoAlbumDeploymentStackDeploymentStagePhotoAlbumStack7C9E09C6.assets.json\" --verbose publish \"9e903da4eb545eea1519b230068245fe826520286b6e70ae6f05cccc20159396:756059218166-us-east-1\""
+                  "cdk-assets --path \"assembly-PhotoAlbumDeploymentStack-DeploymentStage/PhotoAlbumDeploymentStackDeploymentStagePhotoAlbumStack7C9E09C6.assets.json\" --verbose publish \"c1742d5b418fb00e7edd387b7fa47b4f659f8472cf5613bcf17c810b9747ae16:756059218166-us-east-1\""
                 ]
               }
             }

@@ -1,0 +1,532 @@
+Resources:
+  PhotoAlbumFrontendDeploymentArtifactsBucketEncryptionKeyB6297CEF:
+    Type: AWS::KMS::Key
+    Properties:
+      KeyPolicy:
+        Statement:
+          - Action: kms:*
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::756059218166:root
+            Resource: "*"
+        Version: "2012-10-17"
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendDeployment/ArtifactsBucketEncryptionKey/Resource
+  PhotoAlbumFrontendDeploymentArtifactsBucketEncryptionKeyAlias509A49B6:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: alias/codepipeline-deploymentstage-photoalbumfrontenddeploymentstack-photoalbumfrontenddeployment-86124cfd
+      TargetKeyId:
+        Fn::GetAtt:
+          - PhotoAlbumFrontendDeploymentArtifactsBucketEncryptionKeyB6297CEF
+          - Arn
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendDeployment/ArtifactsBucketEncryptionKeyAlias/Resource
+  PhotoAlbumFrontendDeploymentArtifactsBucketC9C0AA64:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID:
+                Fn::GetAtt:
+                  - PhotoAlbumFrontendDeploymentArtifactsBucketEncryptionKeyB6297CEF
+                  - Arn
+              SSEAlgorithm: aws:kms
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendDeployment/ArtifactsBucket/Resource
+  PhotoAlbumFrontendDeploymentArtifactsBucketPolicyA1360E01:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: PhotoAlbumFrontendDeploymentArtifactsBucketC9C0AA64
+      PolicyDocument:
+        Statement:
+          - Action: s3:*
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+            Effect: Deny
+            Principal:
+              AWS: "*"
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumFrontendDeploymentArtifactsBucketC9C0AA64
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumFrontendDeploymentArtifactsBucketC9C0AA64
+                        - Arn
+                    - /*
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendDeployment/ArtifactsBucket/Policy/Resource
+  PhotoAlbumFrontendDeploymentRoleA37207C2:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendDeployment/Role/Resource
+  PhotoAlbumFrontendDeploymentRoleDefaultPolicy92CE3D5C:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:Abort*
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+              - s3:PutObject
+              - s3:PutObjectLegalHold
+              - s3:PutObjectRetention
+              - s3:PutObjectTagging
+              - s3:PutObjectVersionTagging
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumFrontendDeploymentArtifactsBucketC9C0AA64
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumFrontendDeploymentArtifactsBucketC9C0AA64
+                        - Arn
+                    - /*
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:GenerateDataKey*
+              - kms:ReEncrypt*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - PhotoAlbumFrontendDeploymentArtifactsBucketEncryptionKeyB6297CEF
+                - Arn
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumFrontendDeploymentBuildBuildPhotoAlbumFrontendCodePipelineActionRoleBBD6A64B
+                  - Arn
+              - Fn::GetAtt:
+                  - PhotoAlbumFrontendDeploymentDeployCodePipelineActionRole9D70CDF2
+                  - Arn
+              - Fn::GetAtt:
+                  - PhotoAlbumFrontendDeploymentSourceSourcePhotoAlbumFrontendCodePipelineActionRoleFD6BD772
+                  - Arn
+        Version: "2012-10-17"
+      PolicyName: PhotoAlbumFrontendDeploymentRoleDefaultPolicy92CE3D5C
+      Roles:
+        - Ref: PhotoAlbumFrontendDeploymentRoleA37207C2
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendDeployment/Role/DefaultPolicy/Resource
+  PhotoAlbumFrontendDeployment15B40B0C:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RoleArn:
+        Fn::GetAtt:
+          - PhotoAlbumFrontendDeploymentRoleA37207C2
+          - Arn
+      Stages:
+        - Actions:
+            - ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: "1"
+              Configuration:
+                ConnectionArn: arn:aws:codestar-connections:us-east-1:756059218166:connection/b439316b-e1a6-4cbe-99eb-3090a0187870
+                FullRepositoryId: tmmunroe/photo-album-frontend
+                BranchName: main
+              Name: SourcePhotoAlbumFrontend
+              OutputArtifacts:
+                - Name: SourceArtifact
+              RoleArn:
+                Fn::GetAtt:
+                  - PhotoAlbumFrontendDeploymentSourceSourcePhotoAlbumFrontendCodePipelineActionRoleFD6BD772
+                  - Arn
+              RunOrder: 1
+          Name: Source
+        - Actions:
+            - ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: "1"
+              Configuration:
+                ProjectName:
+                  Ref: PhotoAlbumFrontendProjectB1355D25
+              InputArtifacts:
+                - Name: SourceArtifact
+              Name: BuildPhotoAlbumFrontend
+              OutputArtifacts:
+                - Name: BuildArtifact
+              RoleArn:
+                Fn::GetAtt:
+                  - PhotoAlbumFrontendDeploymentBuildBuildPhotoAlbumFrontendCodePipelineActionRoleBBD6A64B
+                  - Arn
+              RunOrder: 1
+          Name: Build
+        - Actions:
+            - ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: S3
+                Version: "1"
+              Configuration:
+                BucketName:
+                  Fn::ImportValue: DeploymentStage-PhotoAlbumFrontendStack:ExportsOutputRefPhotoAlbumFrontendCB0CB3E9779B6EE0
+                Extract: "true"
+                CannedACL: public-read
+              InputArtifacts:
+                - Name: BuildArtifact
+              Name: Deploy
+              RoleArn:
+                Fn::GetAtt:
+                  - PhotoAlbumFrontendDeploymentDeployCodePipelineActionRole9D70CDF2
+                  - Arn
+              RunOrder: 1
+          Name: Deploy
+      ArtifactStore:
+        EncryptionKey:
+          Id:
+            Fn::GetAtt:
+              - PhotoAlbumFrontendDeploymentArtifactsBucketEncryptionKeyB6297CEF
+              - Arn
+          Type: KMS
+        Location:
+          Ref: PhotoAlbumFrontendDeploymentArtifactsBucketC9C0AA64
+        Type: S3
+    DependsOn:
+      - PhotoAlbumFrontendDeploymentRoleDefaultPolicy92CE3D5C
+      - PhotoAlbumFrontendDeploymentRoleA37207C2
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendDeployment/Resource
+  PhotoAlbumFrontendDeploymentSourceSourcePhotoAlbumFrontendCodePipelineActionRoleFD6BD772:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::756059218166:root
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendDeployment/Source/SourcePhotoAlbumFrontend/CodePipelineActionRole/Resource
+  PhotoAlbumFrontendDeploymentSourceSourcePhotoAlbumFrontendCodePipelineActionRoleDefaultPolicy5E7C02CB:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: codestar-connections:UseConnection
+            Effect: Allow
+            Resource: arn:aws:codestar-connections:us-east-1:756059218166:connection/b439316b-e1a6-4cbe-99eb-3090a0187870
+          - Action:
+              - s3:Abort*
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+              - s3:PutObject
+              - s3:PutObjectLegalHold
+              - s3:PutObjectRetention
+              - s3:PutObjectTagging
+              - s3:PutObjectVersionTagging
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumFrontendDeploymentArtifactsBucketC9C0AA64
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumFrontendDeploymentArtifactsBucketC9C0AA64
+                        - Arn
+                    - /*
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:GenerateDataKey*
+              - kms:ReEncrypt*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - PhotoAlbumFrontendDeploymentArtifactsBucketEncryptionKeyB6297CEF
+                - Arn
+          - Action:
+              - s3:PutObjectAcl
+              - s3:PutObjectVersionAcl
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - Fn::GetAtt:
+                      - PhotoAlbumFrontendDeploymentArtifactsBucketC9C0AA64
+                      - Arn
+                  - /*
+        Version: "2012-10-17"
+      PolicyName: PhotoAlbumFrontendDeploymentSourceSourcePhotoAlbumFrontendCodePipelineActionRoleDefaultPolicy5E7C02CB
+      Roles:
+        - Ref: PhotoAlbumFrontendDeploymentSourceSourcePhotoAlbumFrontendCodePipelineActionRoleFD6BD772
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendDeployment/Source/SourcePhotoAlbumFrontend/CodePipelineActionRole/DefaultPolicy/Resource
+  PhotoAlbumFrontendDeploymentBuildBuildPhotoAlbumFrontendCodePipelineActionRoleBBD6A64B:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::756059218166:root
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendDeployment/Build/BuildPhotoAlbumFrontend/CodePipelineActionRole/Resource
+  PhotoAlbumFrontendDeploymentBuildBuildPhotoAlbumFrontendCodePipelineActionRoleDefaultPolicyDDE5882E:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - codebuild:BatchGetBuilds
+              - codebuild:StartBuild
+              - codebuild:StopBuild
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - PhotoAlbumFrontendProjectB1355D25
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: PhotoAlbumFrontendDeploymentBuildBuildPhotoAlbumFrontendCodePipelineActionRoleDefaultPolicyDDE5882E
+      Roles:
+        - Ref: PhotoAlbumFrontendDeploymentBuildBuildPhotoAlbumFrontendCodePipelineActionRoleBBD6A64B
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendDeployment/Build/BuildPhotoAlbumFrontend/CodePipelineActionRole/DefaultPolicy/Resource
+  PhotoAlbumFrontendDeploymentDeployCodePipelineActionRole9D70CDF2:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::756059218166:root
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendDeployment/Deploy/Deploy/CodePipelineActionRole/Resource
+  PhotoAlbumFrontendDeploymentDeployCodePipelineActionRoleDefaultPolicy65B777D8:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:Abort*
+              - s3:DeleteObject*
+              - s3:PutObject
+              - s3:PutObjectLegalHold
+              - s3:PutObjectRetention
+              - s3:PutObjectTagging
+              - s3:PutObjectVersionTagging
+            Effect: Allow
+            Resource:
+              - Fn::ImportValue: DeploymentStage-PhotoAlbumFrontendStack:ExportsOutputFnGetAttPhotoAlbumFrontendCB0CB3E9Arn0335F79D
+              - Fn::Join:
+                  - ""
+                  - - Fn::ImportValue: DeploymentStage-PhotoAlbumFrontendStack:ExportsOutputFnGetAttPhotoAlbumFrontendCB0CB3E9Arn0335F79D
+                    - /*
+          - Action:
+              - s3:PutObjectAcl
+              - s3:PutObjectVersionAcl
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - Fn::ImportValue: DeploymentStage-PhotoAlbumFrontendStack:ExportsOutputFnGetAttPhotoAlbumFrontendCB0CB3E9Arn0335F79D
+                  - /*
+          - Action:
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumFrontendDeploymentArtifactsBucketC9C0AA64
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumFrontendDeploymentArtifactsBucketC9C0AA64
+                        - Arn
+                    - /*
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - PhotoAlbumFrontendDeploymentArtifactsBucketEncryptionKeyB6297CEF
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: PhotoAlbumFrontendDeploymentDeployCodePipelineActionRoleDefaultPolicy65B777D8
+      Roles:
+        - Ref: PhotoAlbumFrontendDeploymentDeployCodePipelineActionRole9D70CDF2
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendDeployment/Deploy/Deploy/CodePipelineActionRole/DefaultPolicy/Resource
+  PhotoAlbumFrontendProjectRole3F757902:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendProject/Role/Resource
+  PhotoAlbumFrontendProjectRoleDefaultPolicyA61ECB22:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              - Fn::Join:
+                  - ""
+                  - - arn:aws:logs:us-east-1:756059218166:log-group:/aws/codebuild/
+                    - Ref: PhotoAlbumFrontendProjectB1355D25
+                    - :*
+              - Fn::Join:
+                  - ""
+                  - - arn:aws:logs:us-east-1:756059218166:log-group:/aws/codebuild/
+                    - Ref: PhotoAlbumFrontendProjectB1355D25
+          - Action:
+              - codebuild:BatchPutCodeCoverages
+              - codebuild:BatchPutTestCases
+              - codebuild:CreateReport
+              - codebuild:CreateReportGroup
+              - codebuild:UpdateReport
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - arn:aws:codebuild:us-east-1:756059218166:report-group/
+                  - Ref: PhotoAlbumFrontendProjectB1355D25
+                  - -*
+          - Action:
+              - s3:Abort*
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+              - s3:PutObject
+              - s3:PutObjectLegalHold
+              - s3:PutObjectRetention
+              - s3:PutObjectTagging
+              - s3:PutObjectVersionTagging
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumFrontendDeploymentArtifactsBucketC9C0AA64
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumFrontendDeploymentArtifactsBucketC9C0AA64
+                        - Arn
+                    - /*
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:GenerateDataKey*
+              - kms:ReEncrypt*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - PhotoAlbumFrontendDeploymentArtifactsBucketEncryptionKeyB6297CEF
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: PhotoAlbumFrontendProjectRoleDefaultPolicyA61ECB22
+      Roles:
+        - Ref: PhotoAlbumFrontendProjectRole3F757902
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendProject/Role/DefaultPolicy/Resource
+  PhotoAlbumFrontendProjectB1355D25:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:6.0
+        ImagePullCredentialsType: CODEBUILD
+        PrivilegedMode: false
+        Type: LINUX_CONTAINER
+      ServiceRole:
+        Fn::GetAtt:
+          - PhotoAlbumFrontendProjectRole3F757902
+          - Arn
+      Source:
+        BuildSpec: buildspec.yml
+        Type: CODEPIPELINE
+      Cache:
+        Type: NO_CACHE
+      EncryptionKey:
+        Fn::GetAtt:
+          - PhotoAlbumFrontendDeploymentArtifactsBucketEncryptionKeyB6297CEF
+          - Arn
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/PhotoAlbumFrontendProject/Resource
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/0WOwQ7CIBBEv8U7XauN8awevZD6AYZSjFsoNAViGsK/W2ibnubNZLI7Z7iUUB7Yzxa8lYXCBsLLMS7JHL0DN60YcBAKtYBAVyKPj944EtlbCE8xpTTJTSGzyWSIxFYQ7p5L4VK40iLUKOTTHi8+EmQ9hNqo/Cnr3tw6aVrjUbX7LjqaTvD8ZsUY8wVhjR/5vJVO7mv0sYJTCddDZxGL0WuHvYB60T/xm3QCEQEAAA==
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack/CDKMetadata/Default
+Parameters:
+  BootstrapVersion:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cdk-bootstrap/hnb659fds/version
+    Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
+Rules:
+  CheckBootstrapVersion:
+    Assertions:
+      - Assert:
+          Fn::Not:
+            - Fn::Contains:
+                - - "1"
+                  - "2"
+                  - "3"
+                  - "4"
+                  - "5"
+                - Ref: BootstrapVersion
+        AssertDescription: CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.
+
