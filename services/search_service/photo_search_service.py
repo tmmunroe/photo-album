@@ -4,7 +4,6 @@ from aws_cdk import (aws_iam as iam,
                      aws_s3 as s3,
                      aws_opensearchservice as opensearch,
                      aws_lambda as lambda_)
-from .lex_bot import PhotoSearchServiceLexBot
 
 
 class PhotoSearchService(Construct):
@@ -17,7 +16,6 @@ class PhotoSearchService(Construct):
         super().__init__(scope, id)
 
         # set up Lex
-        # lex_wrapper = PhotoSearchServiceLexBot(self, "PhotoSearchServiceLex")
         lex_bot_id = 'UFYUFHDBYO'
         lex_bot_alias = 'HE6YVHY5FC'
 

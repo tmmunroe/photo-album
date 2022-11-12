@@ -2,9 +2,9 @@ Hi class,
 
 Please find below the grading rubric for Assignment 2:
 
-1a. An S3 object without custom label is successfully uploaded - 5
-1b. The S3 object with custom label is successfully uploaded - 5
-1c. An API Key is enabled for at least 1 endpoint - 5
+DONE - 1a. An S3 object without custom label is successfully uploaded - 5 
+DONE - 1b. The S3 object with custom label is successfully uploaded - 5
+DONE - 1c. An API Key is enabled for at least 1 endpoint - 5
 
 2a. Correct search results for “show me REKOGNITION_LABEL” - 5
 2b. Correct search results for “show me CUSTOM_LABEL” - 5

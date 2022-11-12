@@ -57,13 +57,16 @@ def search_opensearch(search_terms):
     response = search.msearch(dsl_queries, index=index)
     
     print(f"OpenSearch response: {response}")
-    hits = []
+    results = {} # by bucket,objectKey - this helps to prevent returning the same image more than once
     for term, term_response in zip(term, response['responses']):
         term_hits = term_response['hits']['hits']
-        hits.extend(term_hits)
+        for hit in term_hits:
+            index_model = OpenSearchIndexModel.from_dict(hit['_source'])
+            results[(index_model.bucket, index_model.objectKey)] = index_model
+
         print(f"{term}: found {len(term_hits)}")
 
-    return [ OpenSearchIndexModel.from_dict(hit['_source']) for hit in hits ]
+    return list(results.values())
 
 
 def labels_from_text(query):
