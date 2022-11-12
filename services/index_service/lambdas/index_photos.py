@@ -13,8 +13,8 @@ import boto3
 s3 = boto3.client('s3')
 rekognition = boto3.client('rekognition')
 
-min_confidence = 0.6
-max_labels = 10
+min_confidence = 0.7
+max_labels = 25
 
 
 def opensearch_aws_auth():
