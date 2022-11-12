@@ -6,20 +6,19 @@ DONE - 1a. An S3 object without custom label is successfully uploaded - 5
 DONE - 1b. The S3 object with custom label is successfully uploaded - 5
 DONE - 1c. An API Key is enabled for at least 1 endpoint - 5
 
-2a. Correct search results for “show me REKOGNITION_LABEL” - 5
+DONE - 2a. Correct search results for “show me REKOGNITION_LABEL” - 5
 2b. Correct search results for “show me CUSTOM_LABEL” - 5
 2c. Correct search results for “show me REKOGNITION_LABEL and REKOGNITION_LABEL” - 5
 2d. Correct search results for “show me REKOGNITION_LABEL and CUSTOM_LABEL” - 5
 2e. Correct search results for “show me REKOGNITION_LABEL (plural)” - 5
 
-3a. User can control when speech-to-text begins - 5
-3b. Voice is converted to text in the search field - 5
-3c. Search can be completed when user stops speaking (manually hitting search is fine) - 5
+DONE - 3a. User can control when speech-to-text begins - 5
+DONE - 3b. Voice is converted to text in the search field - 5
+DONE - 3c. Search can be completed when user stops speaking (manually hitting search is fine) - 5
 
-4a. Change to frontend source code is picked up by CodePipeline - 5
-
-4b. Deploy stage successfully completes - 5
-4c. Change is viewable on the frontend - 5
+DONE - 4a. Change to frontend source code is picked up by CodePipeline - 5
+DONE - 4b. Deploy stage successfully completes - 5
+DONE - 4c. Change is viewable on the frontend - 5
 
 5a. Change to at least 1 lambda function’s source code is picked up by CodePipeline - 5
 5b. Build stage successfuly completes - 5
