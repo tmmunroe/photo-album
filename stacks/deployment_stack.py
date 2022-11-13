@@ -36,6 +36,7 @@ class PhotoAlbumDeploymentStack(cdk.Stack):
         # cdk pipeline
         pipeline = pipelines.CodePipeline(self, "PhotoAlbumCDKPipeline", 
                     pipeline_name="PhotoAlbumCDKPipeline",
+                    use_change_sets=False,
                     code_build_defaults=pipelines.CodeBuildOptions(
                         build_environment=codebuild.BuildEnvironment(
                             build_image=codebuild.LinuxBuildImage.STANDARD_5_0
