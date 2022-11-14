@@ -54,8 +54,8 @@ class PhotoAlbumFrontendStack(cdk.Stack):
             default_root_object="index.html",
             price_class=cloudfront.PriceClass.PRICE_CLASS_100,
             error_responses=[ # for SPA apps, need redirects to index
-                cloudfront.ErrorResponse(http_status=403, response_http_status=200, response_page_path="index.html"),
-                cloudfront.ErrorResponse(http_status=404, response_http_status=200, response_page_path="index.html"),
+                cloudfront.ErrorResponse(http_status=403, response_http_status=200, response_page_path="/index.html"),
+                cloudfront.ErrorResponse(http_status=404, response_http_status=200, response_page_path="/index.html"),
             ]
         )
 

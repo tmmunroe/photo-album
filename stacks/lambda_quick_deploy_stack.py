@@ -13,7 +13,7 @@ from constructs import Construct
 
 class PhotoAlbumFrontendDeploymentStack(cdk.Stack):
 
-    def __init__(self, scope: Construct, construct_id: str, frontend_bucket=None, env=None) -> None:
+    def __init__(self, scope: Construct, construct_id: str, env=None) -> None:
         super().__init__(scope, construct_id, env=env)
         
         # set up artifacts
@@ -21,7 +21,7 @@ class PhotoAlbumFrontendDeploymentStack(cdk.Stack):
         build_artifact = codepipeline.Artifact("LambdaBuildArtifact")
         
         # pipeline
-        pipeline = codepipeline.Pipeline(self, "PhotoAlbumFrontendDeployment")
+        pipeline = codepipeline.Pipeline(self, "PhotoAlbumLambdaDeployment")
 
         # add source
         pipeline.add_stage(
