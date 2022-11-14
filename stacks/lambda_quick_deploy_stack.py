@@ -53,8 +53,8 @@ class PhotoAlbumLambdaDeploymentStack(cdk.Stack):
                                     "commands": [
                                         "python --version",
                                         "pip install -r requirements.txt",
-                                        "zip search_code.zip services/search_service/lambdas/search_photos.py",
-                                        "zip index_code.zip services/index_service/lambdas/index_photos.py",
+                                        "zip -j search_code.zip services/search_service/lambdas/search_photos.py",
+                                        "zip -j index_code.zip services/index_service/lambdas/index_photos.py",
                                         f"aws lambda update-function-code --function-name \"{search_lambda.function_name}\" --zip-file fileb://search_code.zip",
                                         f"aws lambda update-function-code --function-name \"{index_lambda.function_name}\" --zip-file fileb://index_code.zip",
                                     ]
