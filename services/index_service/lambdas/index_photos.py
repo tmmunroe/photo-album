@@ -78,6 +78,7 @@ def get_labels(bucket, key):
 
 
 def lambda_handler(event, context):
+    print("Test new quick-deploy pipeline for lambda changes")
     print("Event: " + json.dumps(event))
 
     # Get the object from the event and show its content type
