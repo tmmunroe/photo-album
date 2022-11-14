@@ -6,6 +6,7 @@ from aws_cdk import (
 from constructs import Construct
 
 from stacks.backend_stack import PhotoAlbumStack
+from stacks.lambda_quick_deploy_stack import PhotoAlbumLambdaDeploymentStack
 from stacks.frontend_stack import PhotoAlbumFrontendStack
 from stacks.frontend_deployment_stack import PhotoAlbumFrontendDeploymentStack
 
@@ -14,7 +15,10 @@ class PhotoAlbumDeploymentStage(cdk.Stage):
         super().__init__(scope, id, env=env, outdir=outdir, stage_name=stage_name)
 
         # backend stack
-        PhotoAlbumStack(self, "PhotoAlbumStack", env=env)
+        backend_stack = PhotoAlbumStack(self, "PhotoAlbumStack", env=env)
+        lambda_quick_deploy = PhotoAlbumLambdaDeploymentStack(self, "PhotoAlbumLambaQuickDeployStack", env=env, 
+            search_lambda=backend_stack.search_service.lambda_search,
+            index_lambda=backend_stack.index_service.lambda_index)
         
         # frontend stack + separate frontend deployment stack/pipeline 
         frontend_stack = PhotoAlbumFrontendStack(self, "PhotoAlbumFrontendStack", env=env)
@@ -37,6 +41,7 @@ class PhotoAlbumDeploymentStack(cdk.Stack):
         pipeline = pipelines.CodePipeline(self, "PhotoAlbumCDKPipeline", 
                     pipeline_name="PhotoAlbumCDKPipeline",
                     use_change_sets=False,
+                    # publish_assets_in_parallel=False,
                     code_build_defaults=pipelines.CodeBuildOptions(
                         build_environment=codebuild.BuildEnvironment(
                             build_image=codebuild.LinuxBuildImage.STANDARD_5_0

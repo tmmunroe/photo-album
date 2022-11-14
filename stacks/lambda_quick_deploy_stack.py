@@ -6,14 +6,15 @@ from aws_cdk import (
     aws_codebuild as codebuild,
     aws_codeartifact as codeartifact,
     aws_cloudfront as cloudfront,
+    aws_lambda as lambda_,
     aws_s3 as s3,
 )
 from constructs import Construct
 
 
-class PhotoAlbumFrontendDeploymentStack(cdk.Stack):
+class PhotoAlbumLambdaDeploymentStack(cdk.Stack):
 
-    def __init__(self, scope: Construct, construct_id: str, env=None) -> None:
+    def __init__(self, scope: Construct, construct_id: str, env=None, search_lambda:lambda_.IFunction=None, index_lambda:lambda_.IFunction=None) -> None:
         super().__init__(scope, construct_id, env=env)
         
         # set up artifacts
@@ -40,7 +41,7 @@ class PhotoAlbumFrontendDeploymentStack(cdk.Stack):
 
         # add build/deploy - note that build spec is in the repo
         pipeline.add_stage(
-            stage_name="FilterLambdas",
+            stage_name="FilterAndUploadLambdas",
             actions=[
                 actions.CodeBuildAction(
                     action_name="BuildPhotoAlbumLambdas",
@@ -51,7 +52,21 @@ class PhotoAlbumFrontendDeploymentStack(cdk.Stack):
                         environment=codebuild.BuildEnvironment(
                             build_image=codebuild.LinuxBuildImage.STANDARD_6_0 # Ubuntu 22
                         ),
-                        build_spec=codebuild.BuildSpec.from_source_filename('lambda-buildspec.yml')
+                        build_spec=codebuild.BuildSpec.from_object({
+                            "version": "0.2",
+                            "phases": {
+                                "build": {
+                                    "commands": [
+                                        "python --version",
+                                        "pip install -r requirements.txt",
+                                        "zip search_code.zip services/index_service/lambdas/search_photos.py",
+                                        "zip index_code.zip services/index_service/lambdas/index_photos.py",
+                                        f"aws lambda update-function-code --function-name \"{search_lambda.function_name}\" --zip-file fileb://search_code.zip",
+                                        f"aws lambda update-function-code --function-name \"{index_lambda.function_name}\" --zip-file fileb://index_code.zip",
+                                    ]
+                                },
+                            }
+                        })
                     )
                 ),
             ]

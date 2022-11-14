@@ -23,11 +23,11 @@ class PhotoAlbumStack(cdk.Stack):
         open_search = data_tier.open_search
         open_search_index = 'photo-album-v1'
 
-        index_service = PhotoIndexService(self, 'PhotoIndexService', 
+        self.index_service = PhotoIndexService(self, 'PhotoIndexService', 
             bucket=bucket, open_search_domain=open_search, open_search_index=open_search_index,
             lambda_layer=lambda_layer_wrapper.layer)
         
-        search_service = PhotoSearchService(self, 'PhotoSearchService', 
+        self.search_service = PhotoSearchService(self, 'PhotoSearchService', 
             bucket=bucket, open_search_domain=open_search, open_search_index=open_search_index,
             lambda_layer=lambda_layer_wrapper.layer)
 
@@ -38,7 +38,7 @@ class PhotoAlbumStack(cdk.Stack):
             role_name='APIGatewayPhotoAlbumRole')
 
         bucket.grant_put(api_role)
-        search_service.lambda_search.grant_invoke(api_role)
+        self.search_service.lambda_search.grant_invoke(api_role)
 
         # set up api
         custom_allow_headers = ['object-key', 'x-amz-meta-customLabels']
