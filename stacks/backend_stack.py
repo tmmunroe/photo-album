@@ -134,7 +134,7 @@ class PhotoAlbumStack(cdk.Stack):
         
         # search integration for lambda search handler
         search_integration = apigateway.LambdaIntegration(
-          search_service.lambda_search,
+          self.search_service.lambda_search,
           credentials_role=api_role
         )
         search_resource = api.root.add_resource('search')
