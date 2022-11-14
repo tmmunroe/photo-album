@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_codeartifact as codeartifact,
     aws_cloudfront as cloudfront,
     aws_lambda as lambda_,
+    aws_iam as iam,
     aws_s3 as s3,
 )
 from constructs import Construct
@@ -40,14 +41,7 @@ class PhotoAlbumLambdaDeploymentStack(cdk.Stack):
         )
 
         # add build/deploy - note that build spec is in the repo
-        pipeline.add_stage(
-            stage_name="FilterAndUploadLambdas",
-            actions=[
-                actions.CodeBuildAction(
-                    action_name="BuildPhotoAlbumLambdas",
-                    input=source_artifact,
-                    outputs=[build_artifact],
-                    project=codebuild.PipelineProject(
+        project = codebuild.PipelineProject(
                         self, "PhotoAlbumLambdasProject",
                         environment=codebuild.BuildEnvironment(
                             build_image=codebuild.LinuxBuildImage.STANDARD_6_0 # Ubuntu 22
@@ -68,6 +62,22 @@ class PhotoAlbumLambdaDeploymentStack(cdk.Stack):
                             }
                         })
                     )
+        
+        # give project permission to update function codes
+        project.add_to_role_policy(iam.PolicyStatement(
+            effect=iam.Effect.ALLOW,
+            actions=["lambda:UpdateFunctionCode"],
+            resources=[search_lambda.function_arn, index_lambda.function_arn]
+        ))
+
+        pipeline.add_stage(
+            stage_name="FilterAndUploadLambdas",
+            actions=[
+                actions.CodeBuildAction(
+                    action_name="BuildPhotoAlbumLambdas",
+                    input=source_artifact,
+                    outputs=[build_artifact],
+                    project=project
                 ),
             ]
         )
