@@ -1,12 +1,16 @@
 
 # Welcome to your CDK Python project!
 
+Start up-
+
 cdk deploy - deploys deployment pipeline; which in turn builds cloudformation for all stacks
 
 run lambda to create opensearch index - set up proper analyzer for opensearch
 
 update api key and api url in frontend app
 
+
+Tear down-
 
 
 
