@@ -4,14 +4,14 @@ Resources:
     Properties:
       Content:
         S3Bucket: cdk-hnb659fds-assets-756059218166-us-east-1
-        S3Key: c1742d5b418fb00e7edd387b7fa47b4f659f8472cf5613bcf17c810b9747ae16.zip
+        S3Key: 656f657c3836131e2f08bc6bf992723c6db1fc13e96a9e96c88e690355d18347.zip
       CompatibleRuntimes:
         - python3.9
     UpdateReplacePolicy: Delete
     DeletionPolicy: Delete
     Metadata:
       aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumStack/PythonLambdaLayerTier/PythonLambdaLayerCore/Resource
-      aws:asset:path: ../asset.c1742d5b418fb00e7edd387b7fa47b4f659f8472cf5613bcf17c810b9747ae16
+      aws:asset:path: ../asset.656f657c3836131e2f08bc6bf992723c6db1fc13e96a9e96c88e690355d18347
       aws:asset:is-bundled: false
       aws:asset:property: Content
   PhotoAlbumDataTierPhotoAlbumS3B365F39C:
@@ -338,7 +338,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: cdk-hnb659fds-assets-756059218166-us-east-1
-        S3Key: 7e89b586e5bebf5ad26e2416ce2cbbb4afe84d33a1c97b822b6f4bf8cf9d38c8.zip
+        S3Key: 63ffc5572d891db19faeef705ac0f25dd3e6305b38e7d87ac1667dee84e79b59.zip
       Role:
         Fn::GetAtt:
           - PhotoIndexServicePhotoAlbumIndexerServiceRole28534A8C
@@ -362,7 +362,7 @@ Resources:
       - PhotoIndexServicePhotoAlbumIndexerServiceRole28534A8C
     Metadata:
       aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumStack/PhotoIndexService/PhotoAlbumIndexer/Resource
-      aws:asset:path: ../asset.7e89b586e5bebf5ad26e2416ce2cbbb4afe84d33a1c97b822b6f4bf8cf9d38c8
+      aws:asset:path: ../asset.63ffc5572d891db19faeef705ac0f25dd3e6305b38e7d87ac1667dee84e79b59
       aws:asset:is-bundled: false
       aws:asset:property: Code
   PhotoIndexServicePhotoAlbumIndexerInvoke7Tjz5KX7GRQDyjRPBytArERKUwy73V0WhTiHDj2lAwECA071A1:
@@ -605,7 +605,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: cdk-hnb659fds-assets-756059218166-us-east-1
-        S3Key: 9f3bb0a28f50c26c33471042fc977c7c1208bed9facd10dc13b2abd69c941162.zip
+        S3Key: 4ce012e8c91c27b912329d13aa74ee69ecd073fc3cdd3a783155fe8f1de738df.zip
       Role:
         Fn::GetAtt:
           - PhotoSearchServicePhotoAlbumSearcherServiceRoleE180B6BA
@@ -631,7 +631,7 @@ Resources:
       - PhotoSearchServicePhotoAlbumSearcherServiceRoleE180B6BA
     Metadata:
       aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumStack/PhotoSearchService/PhotoAlbumSearcher/Resource
-      aws:asset:path: ../asset.9f3bb0a28f50c26c33471042fc977c7c1208bed9facd10dc13b2abd69c941162
+      aws:asset:path: ../asset.4ce012e8c91c27b912329d13aa74ee69ecd073fc3cdd3a783155fe8f1de738df
       aws:asset:is-bundled: false
       aws:asset:property: Code
   APIGatewayRole0A3D51E6:
@@ -644,7 +644,6 @@ Resources:
             Principal:
               Service: apigateway.amazonaws.com
         Version: "2012-10-17"
-      RoleName: APIGatewayPhotoAlbumRole
     Metadata:
       aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumStack/APIGatewayRole/Resource
   APIGatewayRoleDefaultPolicyEA6238D4:
@@ -1095,6 +1094,30 @@ Outputs:
           - /
           - Ref: photoapiDeploymentStagetestStageFE8E86C2
           - /
+  ExportsOutputFnGetAttPhotoSearchServicePhotoAlbumSearcher8B9DCC3AArn8C22662F:
+    Value:
+      Fn::GetAtt:
+        - PhotoSearchServicePhotoAlbumSearcher8B9DCC3A
+        - Arn
+    Export:
+      Name: DeploymentStage-PhotoAlbumStack:ExportsOutputFnGetAttPhotoSearchServicePhotoAlbumSearcher8B9DCC3AArn8C22662F
+  ExportsOutputFnGetAttPhotoIndexServicePhotoAlbumIndexer1CF9FCF3Arn81C79EDC:
+    Value:
+      Fn::GetAtt:
+        - PhotoIndexServicePhotoAlbumIndexer1CF9FCF3
+        - Arn
+    Export:
+      Name: DeploymentStage-PhotoAlbumStack:ExportsOutputFnGetAttPhotoIndexServicePhotoAlbumIndexer1CF9FCF3Arn81C79EDC
+  ExportsOutputRefPhotoSearchServicePhotoAlbumSearcher8B9DCC3ADCA8CB05:
+    Value:
+      Ref: PhotoSearchServicePhotoAlbumSearcher8B9DCC3A
+    Export:
+      Name: DeploymentStage-PhotoAlbumStack:ExportsOutputRefPhotoSearchServicePhotoAlbumSearcher8B9DCC3ADCA8CB05
+  ExportsOutputRefPhotoIndexServicePhotoAlbumIndexer1CF9FCF31A94D895:
+    Value:
+      Ref: PhotoIndexServicePhotoAlbumIndexer1CF9FCF3
+    Export:
+      Name: DeploymentStage-PhotoAlbumStack:ExportsOutputRefPhotoIndexServicePhotoAlbumIndexer1CF9FCF31A94D895
 Parameters:
   BootstrapVersion:
     Type: AWS::SSM::Parameter::Value<String>

@@ -35,7 +35,8 @@ class PhotoAlbumStack(cdk.Stack):
         # set up api role
         api_role = iam.Role(self, 'APIGatewayRole',
             assumed_by=iam.ServicePrincipal('apigateway.amazonaws.com'),
-            role_name='APIGatewayPhotoAlbumRole')
+            # role_name='APIGatewayPhotoAlbumRole'
+            )
 
         bucket.grant_put(api_role)
         self.search_service.lambda_search.grant_invoke(api_role)

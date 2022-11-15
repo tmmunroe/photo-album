@@ -4,6 +4,9 @@ echo "Generating lambda layer..."
 echo "Running 'cdk synth' for deployment stack"
 cdk synth PhotoAlbumDeploymentStack > templates/deployment.yml
 
+echo "Running 'cdk synth' for lambda quick deploy stack"
+cdk synth PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack > templates/lambda-deployment.yml
+
 echo "Running 'cdk synth' for front end deployment stack"
 cdk synth PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendDeploymentStack > templates/frontend-deployment.yml
 

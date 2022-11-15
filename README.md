@@ -1,6 +1,16 @@
 
 # Welcome to your CDK Python project!
 
+cdk deploy
+
+run lambda to create opensearch index
+
+update api key and api endpoint in frontend app
+
+
+
+
+
 This is a blank project for CDK development with Python.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.

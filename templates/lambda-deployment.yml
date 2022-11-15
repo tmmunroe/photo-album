@@ -1,0 +1,468 @@
+Resources:
+  PhotoAlbumLambdaDeploymentArtifactsBucketEncryptionKeyCCB98229:
+    Type: AWS::KMS::Key
+    Properties:
+      KeyPolicy:
+        Statement:
+          - Action: kms:*
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::756059218166:root
+            Resource: "*"
+        Version: "2012-10-17"
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/PhotoAlbumLambdaDeployment/ArtifactsBucketEncryptionKey/Resource
+  PhotoAlbumLambdaDeploymentArtifactsBucketEncryptionKeyAlias7D264D84:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: alias/codepipeline-deploymentstage-photoalbumlambaquickdeploystack-photoalbumlambdadeployment-25aaba2d
+      TargetKeyId:
+        Fn::GetAtt:
+          - PhotoAlbumLambdaDeploymentArtifactsBucketEncryptionKeyCCB98229
+          - Arn
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/PhotoAlbumLambdaDeployment/ArtifactsBucketEncryptionKeyAlias/Resource
+  PhotoAlbumLambdaDeploymentArtifactsBucket2F168EA0:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID:
+                Fn::GetAtt:
+                  - PhotoAlbumLambdaDeploymentArtifactsBucketEncryptionKeyCCB98229
+                  - Arn
+              SSEAlgorithm: aws:kms
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/PhotoAlbumLambdaDeployment/ArtifactsBucket/Resource
+  PhotoAlbumLambdaDeploymentArtifactsBucketPolicy3BAA98B3:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: PhotoAlbumLambdaDeploymentArtifactsBucket2F168EA0
+      PolicyDocument:
+        Statement:
+          - Action: s3:*
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+            Effect: Deny
+            Principal:
+              AWS: "*"
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumLambdaDeploymentArtifactsBucket2F168EA0
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumLambdaDeploymentArtifactsBucket2F168EA0
+                        - Arn
+                    - /*
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/PhotoAlbumLambdaDeployment/ArtifactsBucket/Policy/Resource
+  PhotoAlbumLambdaDeploymentRoleA6C4666D:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/PhotoAlbumLambdaDeployment/Role/Resource
+  PhotoAlbumLambdaDeploymentRoleDefaultPolicy7E8CE09B:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:Abort*
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+              - s3:PutObject
+              - s3:PutObjectLegalHold
+              - s3:PutObjectRetention
+              - s3:PutObjectTagging
+              - s3:PutObjectVersionTagging
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumLambdaDeploymentArtifactsBucket2F168EA0
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumLambdaDeploymentArtifactsBucket2F168EA0
+                        - Arn
+                    - /*
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:GenerateDataKey*
+              - kms:ReEncrypt*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - PhotoAlbumLambdaDeploymentArtifactsBucketEncryptionKeyCCB98229
+                - Arn
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumLambdaDeploymentFilterAndUploadLambdasBuildPhotoAlbumLambdasCodePipelineActionRole8F79921A
+                  - Arn
+              - Fn::GetAtt:
+                  - PhotoAlbumLambdaDeploymentSourceLambdasSourcePhotoAlbumLCodePipelineActionRoleEBDD6779
+                  - Arn
+        Version: "2012-10-17"
+      PolicyName: PhotoAlbumLambdaDeploymentRoleDefaultPolicy7E8CE09B
+      Roles:
+        - Ref: PhotoAlbumLambdaDeploymentRoleA6C4666D
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/PhotoAlbumLambdaDeployment/Role/DefaultPolicy/Resource
+  PhotoAlbumLambdaDeployment2FEBA282:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RoleArn:
+        Fn::GetAtt:
+          - PhotoAlbumLambdaDeploymentRoleA6C4666D
+          - Arn
+      Stages:
+        - Actions:
+            - ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: "1"
+              Configuration:
+                ConnectionArn: arn:aws:codestar-connections:us-east-1:756059218166:connection/b439316b-e1a6-4cbe-99eb-3090a0187870
+                FullRepositoryId: tmmunroe/photo-album
+                BranchName: main
+              Name: SourcePhotoAlbumL
+              OutputArtifacts:
+                - Name: LambdaSourceArtifact
+              RoleArn:
+                Fn::GetAtt:
+                  - PhotoAlbumLambdaDeploymentSourceLambdasSourcePhotoAlbumLCodePipelineActionRoleEBDD6779
+                  - Arn
+              RunOrder: 1
+          Name: SourceLambdas
+        - Actions:
+            - ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: "1"
+              Configuration:
+                ProjectName:
+                  Ref: PhotoAlbumLambdasProjectE6AD7A84
+              InputArtifacts:
+                - Name: LambdaSourceArtifact
+              Name: BuildPhotoAlbumLambdas
+              OutputArtifacts:
+                - Name: LambdaBuildArtifact
+              RoleArn:
+                Fn::GetAtt:
+                  - PhotoAlbumLambdaDeploymentFilterAndUploadLambdasBuildPhotoAlbumLambdasCodePipelineActionRole8F79921A
+                  - Arn
+              RunOrder: 1
+          Name: FilterAndUploadLambdas
+      ArtifactStore:
+        EncryptionKey:
+          Id:
+            Fn::GetAtt:
+              - PhotoAlbumLambdaDeploymentArtifactsBucketEncryptionKeyCCB98229
+              - Arn
+          Type: KMS
+        Location:
+          Ref: PhotoAlbumLambdaDeploymentArtifactsBucket2F168EA0
+        Type: S3
+    DependsOn:
+      - PhotoAlbumLambdaDeploymentRoleDefaultPolicy7E8CE09B
+      - PhotoAlbumLambdaDeploymentRoleA6C4666D
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/PhotoAlbumLambdaDeployment/Resource
+  PhotoAlbumLambdaDeploymentSourceLambdasSourcePhotoAlbumLCodePipelineActionRoleEBDD6779:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::756059218166:root
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/PhotoAlbumLambdaDeployment/SourceLambdas/SourcePhotoAlbumL/CodePipelineActionRole/Resource
+  PhotoAlbumLambdaDeploymentSourceLambdasSourcePhotoAlbumLCodePipelineActionRoleDefaultPolicy3DBE65CB:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: codestar-connections:UseConnection
+            Effect: Allow
+            Resource: arn:aws:codestar-connections:us-east-1:756059218166:connection/b439316b-e1a6-4cbe-99eb-3090a0187870
+          - Action:
+              - s3:Abort*
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+              - s3:PutObject
+              - s3:PutObjectLegalHold
+              - s3:PutObjectRetention
+              - s3:PutObjectTagging
+              - s3:PutObjectVersionTagging
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumLambdaDeploymentArtifactsBucket2F168EA0
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumLambdaDeploymentArtifactsBucket2F168EA0
+                        - Arn
+                    - /*
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:GenerateDataKey*
+              - kms:ReEncrypt*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - PhotoAlbumLambdaDeploymentArtifactsBucketEncryptionKeyCCB98229
+                - Arn
+          - Action:
+              - s3:PutObjectAcl
+              - s3:PutObjectVersionAcl
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - Fn::GetAtt:
+                      - PhotoAlbumLambdaDeploymentArtifactsBucket2F168EA0
+                      - Arn
+                  - /*
+        Version: "2012-10-17"
+      PolicyName: PhotoAlbumLambdaDeploymentSourceLambdasSourcePhotoAlbumLCodePipelineActionRoleDefaultPolicy3DBE65CB
+      Roles:
+        - Ref: PhotoAlbumLambdaDeploymentSourceLambdasSourcePhotoAlbumLCodePipelineActionRoleEBDD6779
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/PhotoAlbumLambdaDeployment/SourceLambdas/SourcePhotoAlbumL/CodePipelineActionRole/DefaultPolicy/Resource
+  PhotoAlbumLambdaDeploymentFilterAndUploadLambdasBuildPhotoAlbumLambdasCodePipelineActionRole8F79921A:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::756059218166:root
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/PhotoAlbumLambdaDeployment/FilterAndUploadLambdas/BuildPhotoAlbumLambdas/CodePipelineActionRole/Resource
+  PhotoAlbumLambdaDeploymentFilterAndUploadLambdasBuildPhotoAlbumLambdasCodePipelineActionRoleDefaultPolicy01CB5F23:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - codebuild:BatchGetBuilds
+              - codebuild:StartBuild
+              - codebuild:StopBuild
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - PhotoAlbumLambdasProjectE6AD7A84
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: PhotoAlbumLambdaDeploymentFilterAndUploadLambdasBuildPhotoAlbumLambdasCodePipelineActionRoleDefaultPolicy01CB5F23
+      Roles:
+        - Ref: PhotoAlbumLambdaDeploymentFilterAndUploadLambdasBuildPhotoAlbumLambdasCodePipelineActionRole8F79921A
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/PhotoAlbumLambdaDeployment/FilterAndUploadLambdas/BuildPhotoAlbumLambdas/CodePipelineActionRole/DefaultPolicy/Resource
+  PhotoAlbumLambdasProjectRole092DACF9:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/PhotoAlbumLambdasProject/Role/Resource
+  PhotoAlbumLambdasProjectRoleDefaultPolicy9F33DB81:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              - Fn::Join:
+                  - ""
+                  - - arn:aws:logs:us-east-1:756059218166:log-group:/aws/codebuild/
+                    - Ref: PhotoAlbumLambdasProjectE6AD7A84
+                    - :*
+              - Fn::Join:
+                  - ""
+                  - - arn:aws:logs:us-east-1:756059218166:log-group:/aws/codebuild/
+                    - Ref: PhotoAlbumLambdasProjectE6AD7A84
+          - Action:
+              - codebuild:BatchPutCodeCoverages
+              - codebuild:BatchPutTestCases
+              - codebuild:CreateReport
+              - codebuild:CreateReportGroup
+              - codebuild:UpdateReport
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - arn:aws:codebuild:us-east-1:756059218166:report-group/
+                  - Ref: PhotoAlbumLambdasProjectE6AD7A84
+                  - -*
+          - Action: lambda:UpdateFunctionCode
+            Effect: Allow
+            Resource:
+              - Fn::ImportValue: DeploymentStage-PhotoAlbumStack:ExportsOutputFnGetAttPhotoIndexServicePhotoAlbumIndexer1CF9FCF3Arn81C79EDC
+              - Fn::ImportValue: DeploymentStage-PhotoAlbumStack:ExportsOutputFnGetAttPhotoSearchServicePhotoAlbumSearcher8B9DCC3AArn8C22662F
+          - Action:
+              - s3:Abort*
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+              - s3:PutObject
+              - s3:PutObjectLegalHold
+              - s3:PutObjectRetention
+              - s3:PutObjectTagging
+              - s3:PutObjectVersionTagging
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - PhotoAlbumLambdaDeploymentArtifactsBucket2F168EA0
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - PhotoAlbumLambdaDeploymentArtifactsBucket2F168EA0
+                        - Arn
+                    - /*
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:GenerateDataKey*
+              - kms:ReEncrypt*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - PhotoAlbumLambdaDeploymentArtifactsBucketEncryptionKeyCCB98229
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: PhotoAlbumLambdasProjectRoleDefaultPolicy9F33DB81
+      Roles:
+        - Ref: PhotoAlbumLambdasProjectRole092DACF9
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/PhotoAlbumLambdasProject/Role/DefaultPolicy/Resource
+  PhotoAlbumLambdasProjectE6AD7A84:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:6.0
+        ImagePullCredentialsType: CODEBUILD
+        PrivilegedMode: false
+        Type: LINUX_CONTAINER
+      ServiceRole:
+        Fn::GetAtt:
+          - PhotoAlbumLambdasProjectRole092DACF9
+          - Arn
+      Source:
+        BuildSpec:
+          Fn::Join:
+            - ""
+            - - |-
+                {
+                  "version": "0.2",
+                  "phases": {
+                    "build": {
+                      "commands": [
+                        "python --version",
+                        "pip install -r requirements.txt",
+                        "zip -j search_code.zip services/search_service/lambdas/search_photos.py",
+                        "zip -j index_code.zip services/index_service/lambdas/index_photos.py",
+                        "aws lambda update-function-code --function-name \"
+              - Fn::ImportValue: DeploymentStage-PhotoAlbumStack:ExportsOutputRefPhotoSearchServicePhotoAlbumSearcher8B9DCC3ADCA8CB05
+              - |-
+                \" --zip-file fileb://search_code.zip",
+                        "aws lambda update-function-code --function-name \"
+              - Fn::ImportValue: DeploymentStage-PhotoAlbumStack:ExportsOutputRefPhotoIndexServicePhotoAlbumIndexer1CF9FCF31A94D895
+              - |-
+                \" --zip-file fileb://index_code.zip"
+                      ]
+                    }
+                  }
+                }
+        Type: CODEPIPELINE
+      Cache:
+        Type: NO_CACHE
+      EncryptionKey:
+        Fn::GetAtt:
+          - PhotoAlbumLambdaDeploymentArtifactsBucketEncryptionKeyCCB98229
+          - Arn
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/PhotoAlbumLambdasProject/Resource
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/0WOwQ7CIBBEv8U7XauN8awevZD6AYZSjFsoNAViGsK/W2ibnubNZLI7Z7iUUB7Yzxa8lYXCBsLLMS7JHL0DN60YcBAKtYBAVyKPj944EtlbCE8xpTTJTSGzyWSIxFYQ7p5L4VK40iLUKOTTHi8+EmQ9hNqo/Cnr3tw6aVrjUbX7LjqaTvD8ZsUY8wVhjR/5vJVO7mv0sYJTCddDZxGL0WuHvYB60T/xm3QCEQEAAA==
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumLambaQuickDeployStack/CDKMetadata/Default
+Parameters:
+  BootstrapVersion:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cdk-bootstrap/hnb659fds/version
+    Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
+Rules:
+  CheckBootstrapVersion:
+    Assertions:
+      - Assert:
+          Fn::Not:
+            - Fn::Contains:
+                - - "1"
+                  - "2"
+                  - "3"
+                  - "4"
+                  - "5"
+                - Ref: BootstrapVersion
+        AssertDescription: CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.
+

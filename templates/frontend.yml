@@ -116,12 +116,149 @@ Resources:
       aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler
       aws:asset:path: ../asset.3f51abb709b8e65167a45aeed02bab11540603d909005d7148230ba5ce6c74d7
       aws:asset:property: Code
+  PhotoAlbumCloudFront08B2F286:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - photo-album-tmm2169.com
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        DefaultCacheBehavior:
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+          Compress: true
+          TargetOriginId: PhotoAlbumDeploymentStackDeploymentStagePhotoAlbumFrontendStackPhotoAlbumCloudFrontOrigin18AE5763C
+          ViewerProtocolPolicy: redirect-to-https
+        DefaultRootObject: index.html
+        Enabled: true
+        HttpVersion: http2
+        IPV6Enabled: true
+        Origins:
+          - CustomOriginConfig:
+              OriginProtocolPolicy: http-only
+              OriginSSLProtocols:
+                - TLSv1.2
+            DomainName:
+              Fn::Select:
+                - 2
+                - Fn::Split:
+                    - /
+                    - Fn::GetAtt:
+                        - PhotoAlbumFrontendCB0CB3E9
+                        - WebsiteURL
+            Id: PhotoAlbumDeploymentStackDeploymentStagePhotoAlbumFrontendStackPhotoAlbumCloudFrontOrigin18AE5763C
+        PriceClass: PriceClass_100
+        ViewerCertificate:
+          AcmCertificateArn: arn:aws:acm:us-east-1:756059218166:certificate/c11593ac-b285-4707-8744-0f97d5173416
+          MinimumProtocolVersion: TLSv1.2_2021
+          SslSupportMethod: sni-only
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendStack/PhotoAlbumCloudFront/Resource
+  PhotoAlbumARecord84A3826D:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: photo-album-tmm2169.com.
+      Type: A
+      AliasTarget:
+        DNSName:
+          Fn::GetAtt:
+            - PhotoAlbumCloudFront08B2F286
+            - DomainName
+        HostedZoneId:
+          Fn::FindInMap:
+            - AWSCloudFrontPartitionHostedZoneIdMap
+            - Ref: AWS::Partition
+            - zoneId
+      HostedZoneId: Z05376351NPXVZBCCCUZ0
+    DependsOn:
+      - PhotoAlbumARecordDeleteExistingRecordSetCustomResource4083E8B2
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendStack/PhotoAlbumARecord/Resource
+  PhotoAlbumARecordDeleteExistingRecordSetCustomResource4083E8B2:
+    Type: Custom::DeleteExistingRecordSet
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - CustomDeleteExistingRecordSetCustomResourceProviderHandlerAD00231E
+          - Arn
+      HostedZoneId: Z05376351NPXVZBCCCUZ0
+      RecordName: photo-album-tmm2169.com.
+      RecordType: A
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendStack/PhotoAlbumARecord/DeleteExistingRecordSetCustomResource/Default
+  CustomDeleteExistingRecordSetCustomResourceProviderRole03A7ED08:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      ManagedPolicyArns:
+        - Fn::Sub: arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: Inline
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: route53:GetChange
+                Resource: "*"
+              - Effect: Allow
+                Action: route53:ListResourceRecordSets
+                Resource: arn:aws:route53:::hostedzone/Z05376351NPXVZBCCCUZ0
+              - Effect: Allow
+                Action: route53:ChangeResourceRecordSets
+                Resource: arn:aws:route53:::hostedzone/Z05376351NPXVZBCCCUZ0
+                Condition:
+                  ForAllValues:StringEquals:
+                    route53:ChangeResourceRecordSetsRecordTypes:
+                      - A
+                    route53:ChangeResourceRecordSetsActions:
+                      - DELETE
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendStack/Custom::DeleteExistingRecordSetCustomResourceProvider/Role
+  CustomDeleteExistingRecordSetCustomResourceProviderHandlerAD00231E:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: cdk-hnb659fds-assets-756059218166-us-east-1
+        S3Key: 04371e66614da6603a2d0caff555a5ee48172084069076b90c459275c26db019.zip
+      Timeout: 900
+      MemorySize: 128
+      Handler: __entrypoint__.handler
+      Role:
+        Fn::GetAtt:
+          - CustomDeleteExistingRecordSetCustomResourceProviderRole03A7ED08
+          - Arn
+      Runtime: nodejs14.x
+    DependsOn:
+      - CustomDeleteExistingRecordSetCustomResourceProviderRole03A7ED08
+    Metadata:
+      aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendStack/Custom::DeleteExistingRecordSetCustomResourceProvider/Handler
+      aws:asset:path: ../asset.04371e66614da6603a2d0caff555a5ee48172084069076b90c459275c26db019
+      aws:asset:property: Code
   CDKMetadata:
     Type: AWS::CDK::Metadata
     Properties:
-      Analytics: v2:deflate64:H4sIAAAAAAAA/1WNQQ6CMBBFz8K+HavEuFYu0MABDJaKY6FNOlMNIdxdTE2Iq/f/f4t/gKMCVbRvkqZzcsAbzA23xol1ulIJ8yUZZ1lUd/9LGToMaKZtzn0RVSIOY20ppGjs12/5T+kYXtjZKM5EltfPHn2/CD3xI/hdCXsFp+JJiDImzzhaqDM/Zl/MBrMAAAA=
+      Analytics: v2:deflate64:H4sIAAAAAAAA/1VOSw6CMBA9i/tSUUJc+9maEDyAgXbUEeiYdqohpHe3php19b6TN0tZ5jKfNQ+XKd1lPbZyOnCjOhGt4+QKOW286oDF9mTeLEFFParxaycdhOrJ65Mlw3LaoWOLrWck82r+6iAseYYyLqxrUGT1q5HYATgEsfWOaajBkbcKUvrhf1Fl6Y4arFg7BxzfP6M5i9/DfXO7RS+IauQLmXkhF7lcza4OMbPeMA4g64RP2h7V5BIBAAA=
     Metadata:
       aws:cdk:path: PhotoAlbumDeploymentStack/DeploymentStage/PhotoAlbumFrontendStack/CDKMetadata/Default
+Mappings:
+  AWSCloudFrontPartitionHostedZoneIdMap:
+    aws:
+      zoneId: Z2FDTNDATAQYW2
+    aws-cn:
+      zoneId: Z3RFFRIM2A3IF5
 Outputs:
   ExportsOutputRefPhotoAlbumFrontendCB0CB3E9779B6EE0:
     Value:
