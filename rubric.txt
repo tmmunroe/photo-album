@@ -1,3 +1,27 @@
+"Instructions: Please add your name (UNI) and your team member’s name (UNI) under the preferred slot. 
+
+Note: Please be ready to present your project 5 minutes before your demo slot. 
+Since each slot is only 10 minutes, we urge you to make sure that all your AWS 
+services are up and running BEFORE the demo, so that there are no delays.
+
+This includes having your CloudFormation template ready (read below), 
+front-end app open, several photos ready to be upload, etc. 
+
+Please also be prepared to share your screen. 
+
+PLEASE READ: 
+    -   Cloudformation: You must start a deployment before your demo time 
+        so that during the demo, we can verify if all the services are deployed
+        correctly based on the template that you've used. 
+    -   CodePipeline: We will be asking you to push a change to your frontend/backend
+        repos during the demo to test if the changes trigger the pipeline and deploy 
+        automatically. We recommend you are ready to show both your AWS console as 
+        well as the web application hosted on the S3 bucket.
+
+Grading Rubric: https://edstem.org/us/courses/29541/discussion/1969473 "														
+
+
+
 Hi class,
 
 Please find below the grading rubric for Assignment 2:
