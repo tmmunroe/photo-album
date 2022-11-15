@@ -3,15 +3,16 @@
 
 Start up-
 
-cdk deploy - deploys deployment pipeline; which in turn builds cloudformation for all stacks
+1. cdk deploy - deploys deployment pipeline; which in turn builds cloudformation for all stacks
 
-run lambda to create opensearch index - set up proper analyzer for opensearch
+2. run lambda to create opensearch index - set up proper analyzer for opensearch
 
-update api key and api url in frontend app
+3. update api key and api url in frontend app
 
 
 Tear down-
 
+1. run ./cdk-destroy.sh
 
 
 

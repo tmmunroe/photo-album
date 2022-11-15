@@ -120,7 +120,6 @@ def perform_search(query) -> SearchResponseModel:
 
 
 def lambda_handler(event, context):
-    print("HELLO CHANGE NEW!!!")
     print("Event: ", event)
 
     query = event["queryStringParameters"].get("q")
