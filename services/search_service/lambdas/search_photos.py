@@ -132,6 +132,7 @@ def lambda_handler(event, context):
         }
 
     search_response = perform_search(query)
+    # test change
     print("Search response: ", search_response)
 
     response = {
